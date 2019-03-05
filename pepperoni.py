@@ -1,4 +1,6 @@
-# Pepperoni module
+"""Circle-packing related utilities.
+"""
+
 """
 Data structures: CircleVertex, HalfEdge, Face
 Functions:
@@ -13,9 +15,19 @@ import random
 import numpy as np
 from scipy.spatial import Delaunay
 import matplotlib.pyplot as plt
+
 class CircleVertex:
-    """
-    the data structure for the circles in circle packing
+    """ The data structure for the circles in circle packing.
+    
+    TODO - Update explanation, add properties, example.
+    # Properties
+        index:
+        radius
+        totall_angle
+        x
+        y
+    
+    # Example
     """
     incident_halfedge = [] #one of the halfedges incident with the circle 
     neighbors = [] #the set of all of neighbors of the circle
@@ -26,7 +38,17 @@ class CircleVertex:
         self.totall_angle = ang # the surround angle of the circle. 2pi for
         self.x = x                            # interior circle
         self.y = y
+
 class HalfEdge:
+    """TODO - Add explanation, properties, example.
+    
+    # Properties
+        source:
+        target:
+        face_index:
+    
+    # Example
+    """
     flip = [] # the corresponding halfedge when flip self
     next = [] # the next halfedge 
     prev = []
@@ -37,6 +59,19 @@ class HalfEdge:
         self.face_index = f
 
 class Face:
+    """TODO - ADd explanation, properties, example.
+    
+    # Properties
+       index
+       vertex1
+       vertex2
+       vertex3
+       halfedge1
+       halfedge2
+       halfedge3
+    
+    # Example
+    """
     def __init__(self, v1=[], v2=[], v3=[], i=[]):
         self.index = i # index of the triangle in the triangle list
         self.vertex1 = v1
@@ -57,36 +92,40 @@ class Face:
 
 
 def in_circles(c,Cir):
-    """
-    determine whether c in circle list
+    """Determine whether CircleVertex c in list of CircleVertex Cir.
     
-    # Arguments:
+    # Arguments
         c: Instance of CircleVertex
         Cir: List of CircleVertex
         
-    # Returns:
-        Bool if c can be found in Cir
+    # Returns
+        Bool
+    
+    # Example
+        TODO - Add example
     """
     for ci in Cir:
         if c.index == ci.index:
-            yesorno = True
-            break
-    else:
-        yesorno = False
-    return yesorno
+            return True
+    
+    return False
 
 
 def theta_arround(cv):
-    """
-    calculate the surround angle of a circle vertex cv
+    """Calculate the surround angle of a circle vertex cv
     
-    # Arguments:
+    TODO - Explain 'surround angle', add useful example.
+    
+    # Arguments
         cv: Instance of CircleVertex
     
-    # Returns:
+    # Returns
         Float, the surround angle of cv. 
-    CircleVertex -> float
-    e.g. thera_arround(c) -> 3.14
+    
+    # Example
+        TODO - This example does not work. What is c?
+        e.g. thera_arround(c) -> 3.14
+        
     """
     r = cv.radius
     theta = 0
@@ -95,25 +134,31 @@ def theta_arround(cv):
         rk = cv.neighbors[i+1].radius
         theta = math.acos( ( (r+rj)**2 + (r+rk)**2 - 
         (rj+rk)**2 )/( 2*(r+rj)*(r+rk) ) ) + theta
+    
     return theta
 
 def generate_triangulation(l, h, a_ell, b_ell, delta):
-    """
-    the bridge has an elliptical hole
+    """The bridge has an elliptical hole
     discrete the elliptical hole with uniformed points in delta distance
     genetate the triangulation of these discrete points
     
-    # Arguments:
+    # TODO - Values, default values.
+    
+    # Arguments
         l: the half length of the bridge
         h: the height of the bridge
         a_ell, b_ell, the  parameters of ellipse, x^2/a_ell^2 + y^2/b_ell^2 = 1
         delta: the distance of the discrete points in the domain
     
-    # Returns:
+    # Returns
         tri: Instance of Triangulation
+
+    # Example
     """
-    x_domain = [] # the set of x coordinate of the points for triangulation
-    y_domain = [] # the set of y coordinate of the points for triangulation
+    # x_domain, y_domain will be the set of x and y coordinates
+    # of the points for triangulation
+    x_domain = []
+    y_domain = []
     x = np.linspace(0.0, l, math.ceil(l/delta))
     y = np.linspace(0.0, h, math.ceil(h/delta))
     for xi in x:
@@ -121,51 +166,65 @@ def generate_triangulation(l, h, a_ell, b_ell, delta):
             if (xi/a_ell)**2+(yi/b_ell)**2 < 1:
                 x_domain.append(xi)
                 y_domain.append(yi)
-    points = np.vstack([x_domain,y_domain]).T # the points for triangulation
+    # points = the points for trinagulation
+    points = np.vstack([x_domain,y_domain]).T
+    # generate the triangulation with scipy.Delaunay() and plot triangulation
     tri = Delaunay(points) # generate the triangulation
-    plt.triplot(points[:,0], points[:,1], tri.simplices.copy()) # plot the triangulation
+    plt.triplot(points[:,0], points[:,1], tri.simplices.copy())
     plt.plot(points[:,0], points[:,1], 'o')
     plt.show()
     return tri  
 
 def faces_halfedges(tri, circles):
-    """
-    triples in circle packing are considered as faces
-    halfedge is a kind of direct edge, source -> target
+    """Triples in circle packing are considered as faces.
+    HalfEdge is a kind of direct edge, source -> target.
     
-    # Arguments:
+    TODO - Update explanation, comments within code.
+    
+    # Arguments
         tri: Instance of Triangulation
         circles: list of CircleVertex
         
-    # Returns:
+    # Returns
         faces: list of Face
         halfedges: list of HalfEdge
+
+    # Example
+    
     """
-    faces = [] # the faces of the circle packing
-    halfedges = [] # the halfedges of the circle packing
+    # faces, halfedges are lists associated with the circle packing.
+    faces = []
+    halfedges = []
+    
     n_t = len(tri.simplices)
     for i in range(0, n_t): # create the faces with the circles
-        faces.append(Face(circles[tri.simplices[i][0]], circles[tri.simplices[i][1]], 
-        circles[tri.simplices[i][2]], i))
+        faces.append(Face(circles[tri.simplices[i][0]],
+                          circles[tri.simplices[i][1]], 
+                          circles[tri.simplices[i][2]], i))
         halfedges.append(faces[i].halfedge1)
         halfedges.append(faces[i].halfedge2)
         halfedges.append(faces[i].halfedge3)
-    for j in range(0, len(halfedges)): # collection of halfedges
-        for i in range(0, len(halfedges)):
+    
+    for j in range(len(halfedges)): # collection of halfedges
+        for i in range(len(halfedges)):
             if halfedges[i].source.index == halfedges[j].target.index and \
                halfedges[i].target.index == halfedges[j].source.index:
                halfedges[j].flip=halfedges[i]
+    
     return faces, halfedges
 
 def boundary(halfedges):
-    """
-    collect the boundary circles in ccw way. cb[0] == cb[-1]
+    """Collect the boundary circles in ccw way. cb[0] == cb[-1]
     
-    # Arguments:
+    TODO - Update explanation, comments within code.
+    
+    # Arguments
         halfedges: list of HalfEdge
         
-    # Returns:
+    # Returns
         cb: list of CircleVertex, the boundary circles
+
+    # Example
     """
     cb = [] # collection of boundary circles
     for edge in halfedges:
@@ -182,16 +241,16 @@ def boundary(halfedges):
     return cb
 
 def neighbors_ci(ci):
-    """
-    find the neighbor vertices for interior circles in ccw. the start and end 
-    of the neigbors overlap.
+    """Find the neighbor vertices for interior circles in ccw.
+    The start and end  of the neigbors overlap.
+    That is, ci.neighbors[0] == ci.neighbors[-1f]
     
-    # Arguments:
+    TODO - Update explanation, comments within code.
+    
+    # Arguments
         ci: list of CircleVertex: interiro circles. 
-            ci.neighbors[0] == ci.neighbors[-1f]
-        
-    # Returns:
-        none
+
+    # Example
     """
     #find neighbor for every interior circles
     for i in range(0,len(ci)):
@@ -204,14 +263,14 @@ def neighbors_ci(ci):
             ci[i].neighbors.append(traveller2.target)
             
 def neighbors_cb(cb):
-    """
-    find the neighbor vertices for boundary circles in ccw. t
+    """Find the neighbor vertices for boundary circles in ccw.
     
-    # Arguments:
-        cb: list of CircleVertex: boundary circles. 
-        
-    # Returns:
-        none
+    TODO - Update explanation, comments within code.
+    
+    # Arguments
+        cb: list of CircleVertex: boundary circles.
+    
+    # Example
     """
     for c in cb:
         traveller3 = c.incident_halfedge
@@ -232,20 +291,24 @@ def neighbors_cb(cb):
                 
 def ld_start_end_origin(cb, points):
     """
-    find the start, end of leading dancers in boundary circles collections.
-    find the circle on origin of coordinate
+    Find the start, end of leading dancers in boundary circles collections.
+    Find the circle on origin of coordinate.
     
-    # Arguments:
+    TODO - Update explanation, comments within code.
+    
+    # Arguments
         cb: list of CircleVertex, the boundary circles
         points: the coordinates of center of circles
         
-    # Returns:
+    # Returns
         ld_start: CircleVertex, the start circle of leading dancers
         ld_start_index: int, the index of ld_start in cb
         ld_end: CircleVertex, the end circle of leading dancers
         ld_end_index: int, the index of ld_end in cb
         origin: the circle on the origin of coordinate
         origin_index_cb: the index of origin in cb
+
+    # Example
     """
     x_max = np.max(points[:,0])
     y_max = np.max(points[:,1])
@@ -262,13 +325,19 @@ def ld_start_end_origin(cb, points):
     return ld_start, ld_start_index, ld_end, ld_end_index, origin, origin_index_cb
 
 def leanding_dancers(cb, ld_start_index, ld_end_index):
-    """
-    collect the leading dancers (the circles we can manipulate their radii)
+    """Collect the leading dancers (the circles we can manipulate their radii)
     
-    # Arguments:
+    TODO: Update explanation, add 'Returns'
+    
+    # Arguments
         cb: list of CircleVertex, the boundary circles
         ld_start_index: int, the index of ld_start in cb
         ld_end_index: int, the index of ld_end in cb 
+    
+    # Returns
+        Returns LD, ???
+
+    # Example
     """
     j = ld_start_index
     LD = []
@@ -279,47 +348,49 @@ def leanding_dancers(cb, ld_start_index, ld_end_index):
     return LD
 
 def calculate_ld_surround_angles(LD):
-    """
-    the initial shape of bridge hole determined by the the surround angle of
-    leading dancers
+    """The initial shape of bridge hole determined by the the surround angle of
+    leading dancers.
     
-    # Arguments:
+    TODO: Update explanation.
+    
+    # Arguments
         LD: list of CircleVertex, leading dancers
-        
-    # Returns:
-        none
+
+    # Example
     """
     for j in range(0, len(LD)):
         surround_angle = 0
         for i in range(0, len(LD[j].neighbors)-1):
-            L1 = np.sqrt( ( LD[j].x - LD[j].neighbors[i].x )**2 + ( LD[j].y - 
-            LD[j].neighbors[i].y )**2 )
-            L2 = np.sqrt( (LD[j].x - LD[j].neighbors[i+1].x)**2 + (LD[j].y - 
-            LD[j].neighbors[i+1].y)**2 )
-            L3 = np.sqrt( (LD[j].neighbors[i].x - LD[j].neighbors[i+1].x)**2 + 
-            (LD[j].neighbors[i].y - LD[j].neighbors[i+1].y)**2 )
-            alpha = math.acos( (L1**2+L2**2-L3**2)/(2*L1*L2) )
+            L1 = np.sqrt((LD[j].x - LD[j].neighbors[i].x)**2 +
+                         (LD[j].y - LD[j].neighbors[i].y )**2)
+            L2 = np.sqrt((LD[j].x - LD[j].neighbors[i+1].x)**2 +
+                         (LD[j].y - LD[j].neighbors[i+1].y)**2)
+            L3 = np.sqrt((LD[j].neighbors[i].x - LD[j].neighbors[i+1].x)**2 + 
+                         (LD[j].neighbors[i].y - LD[j].neighbors[i+1].y)**2)
+            alpha = math.acos( (L1**2+L2**2-L3**2)/(2*L1*L2))
             surround_angle = surround_angle + alpha
         LD[j].totall_angle = surround_angle
         
 def calculate_radii(circles, eps, delta_r, leavingout=[]):
-    """
-    calculate the radii of circles by adjusting radii untill the surround_angles 
-    of each circle are equal with the totall anges that prescribe at first
+    """Calculate the radii of circles by adjusting radii untill the
+    surround_angles of each circle are equal with the totall anges that
+    prescribe at first
     If all the radii of boundary circle are undertmined, must leaving one boundary
     circle out.
+
+    TODO - Update explanation, comments within code.
     
-    # Arguments:
+    # Arguments
         circles: list of CircleVertex
         eps: float, error tolerate 
         delta_r: float, the magnitude of radii change in each iteration
         leavingout: CircleVertex, one of the boundary circle
-        
-    # Returns:
-        none
+
+    # Example
     """
     n_c = len(circles)
-    theta_diff = [0]*n_c # the difference between the expected angle and actual angle 
+    # theta_diff: The difference between the expected angle and actual angle 
+    theta_diff = [0]*n_c 
     for i in range(0,n_c):
         if circles[i].index != leavingout.index:
             theta_diff[i] = theta_arround(circles[i]) - circles[i].totall_angle
@@ -336,14 +407,15 @@ def calculate_radii(circles, eps, delta_r, leavingout=[]):
                 theta_diff[i] = theta_arround(circles[i]) - circles[i].totall_angle
 
 def anchor_x_y(cb, origin_index_cb):
-    """
-    Fix the circles lie along x axis and y axis during laying out circles
+    """Fix the circles lie along x axis and y axis during laying out circles
     
-    # Arguments:
+    TODO
+    
+    # Arguments
         cb: list of CircleVertex, boundary circles
         origin_index_cb, the index of circle lying on origin in cb
         
-    # Returns:
+    # Returns
         anchor_x: list of CircleVertex, the circles lying along x axis 
                 including origin
         anchor_y: listn of CircleVertex, the circle lying along y axis
@@ -368,14 +440,15 @@ def anchor_x_y(cb, origin_index_cb):
     return anchor_x, anchor_y
 
 def layout_circles(faces, anchor_x, anchor_y, origin):
-    """
-    layout circles
+    """TODO
     
     # Arguments:
         faces: list of Faces
         anchor_x: list of CircleVertex, the circles lying along x axis
         anchor_y: list of CircleVertex, the circles lying along y axis
         origin: CircleVertex, the cirlce lying on origin of coordinate
+
+    # Example
     """
     x_coord = 0
     anchor_x[0].x = 0
@@ -401,19 +474,20 @@ def layout_circles(faces, anchor_x, anchor_y, origin):
     faces_copy = faces.copy()
     i_face=0
     while faces_copy != []:
-        if faces_copy[i_face].vertex1.placed + faces_copy[i_face].vertex2.placed + \
-        faces_copy[i_face].vertex3.placed == 3:
+        if 3 == faces_copy[i_face].vertex1.placed + \
+                faces_copy[i_face].vertex2.placed + \
+                faces_copy[i_face].vertex3.placed:
             faces_copy.pop(i_face)
             i_face = 0
         elif faces_copy[i_face].vertex1.placed + faces_copy[i_face].vertex2.placed + \
         faces_copy[i_face].vertex3.placed == 2:
             if faces_copy[i_face].vertex1.placed == 1 and \
-            faces_copy[i_face].vertex2.placed == 1:
+               faces_copy[i_face].vertex2.placed == 1:
                 vi = faces_copy[i_face].vertex1
                 vj = faces_copy[i_face].vertex2
                 vk = faces_copy[i_face].vertex3
             elif faces_copy[i_face].vertex2.placed == 1 and \
-            faces_copy[i_face].vertex3.placed == 1:
+                 faces_copy[i_face].vertex3.placed == 1:
                 vi = faces_copy[i_face].vertex2
                 vj = faces_copy[i_face].vertex3
                 vk = faces_copy[i_face].vertex1
@@ -438,9 +512,7 @@ def layout_circles(faces, anchor_x, anchor_y, origin):
                 i_face = 0
                 
 def draw_circles(circles,l):
-    """
-    draw circles
-    
+    """ TODO
     # Arguments:
         circles: list of CircleVertex
         l: float, the half length of bridge
@@ -452,10 +524,12 @@ def draw_circles(circles,l):
     plt.show()
               
 def generate_triangulation(l, h, a_ell, b_ell, delta):
-    """
-    the bridge has an elliptical hole
+    """ The bridge has an elliptical hole
     discrete the elliptical hole with uniformed points in delta distance
     genetate the triangulation of these discrete points
+    
+    # TODO - This is defined twice!
+    # TODO - Shouldn't the name be 'plot_triangulation'?
     
     # Arguments:
         l: the half length of the bridge
@@ -468,7 +542,7 @@ def generate_triangulation(l, h, a_ell, b_ell, delta):
         x_domain: List of float, the x coordinates of the discrete points
         y_domain: List of float, the y coordinates of the discrete points
         
-        
+    # Example
     """
     x_domain = [] # the set of x coordinate of the points for triangulation
     y_domain = [] # the set of y coordinate of the points for triangulation
@@ -574,9 +648,6 @@ def modify_circlepacking(dr,LD, AD, eps, delta_r):
         dr: list of float, the changes added to radii of leading dancers
         LD: list of CircleVertex, the list of leading dancers
         AD: list of CircleVertex, the list of accompanying dancers
-    
-    # Returns:
-    no reuturn
     """
     for i in range(0, len(LD)): # add the changes
         LD[i].radius = LD[i].radius + dr[i]
