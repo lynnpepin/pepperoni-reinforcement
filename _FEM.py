@@ -3,9 +3,11 @@
 Created on Wed Feb 27 19:22:08 2019
 
 @author: mehdi
-maxstress,area = FEM()
+maxstress,area = FEM(Edges,nely,nelx)
+nely = number of elements in y axis(Height of the bridge)
+nelx = number of elements in x axis(Length of the bridge)
 you should bring Edges, r_ld, r = generate_boundary_edges() here, then run this code;
-ccw is used in membershiptest;
+_ccw is used in _membershiptest;
 """
 import math
 import numpy as np
