@@ -3,23 +3,25 @@
 Created on Wed Feb 27 19:22:08 2019
 
 @author: mehdi
-maxstress,area = FEM()
+maxstress,area = FEM(Edges,nely,nelx)
+nely = number of elements in y axis(Height of the bridge)
+nelx = number of elements in x axis(Length of the bridge)
 you should bring Edges, r_ld, r = generate_boundary_edges() here, then run this code;
-ccw is used in membershiptest;
+_ccw is used in _membershiptest;
 """
 import math
 import numpy as np
 import matplotlib.pyplot as plt
 
 
-def ccw(ax, ay, bx, by, cx, cy):
+def _ccw(ax, ay, bx, by, cx, cy):
     if np.linalg.det([[ax, bx, cx], [ay, by, cy], [1, 1, 1]]) > 0:
         return True
     else:
         return False
 
 
-def membershiptest(px, py, Edges):
+def _membershiptest(px, py, Edges):
     size_edges = np.size(Edges, axis=0)
     number_edges = size_edges
     crossNumber = 0
@@ -36,7 +38,7 @@ def membershiptest(px, py, Edges):
             cy = Edges[i][2]
             dx = Edges[i][3]
             dy = Edges[i][4]
-            if (ccw(ax, ay, bx, by, cx, cy) != ccw(ax, ay, bx, by, dx, dy)) & (ccw(cx, cy, dx, dy, ax, ay) != ccw(cx, cy, dx, dy, bx, by)):
+            if (_ccw(ax, ay, bx, by, cx, cy) != _ccw(ax, ay, bx, by, dx, dy)) & (_ccw(cx, cy, dx, dy, ax, ay) != _ccw(cx, cy, dx, dy, bx, by)):
                 crossNumber = crossNumber+1
     if np.mod(crossNumber, 2) == 1:
         return True
@@ -44,9 +46,7 @@ def membershiptest(px, py, Edges):
         return False
 
 
-def FEM(Edges):
-    nelx = 20
-    nely = 10
+def _FEM(Edges,nely,nelx):
     E0 = 2e7
     nu = 0.3
     fmag = 20
@@ -56,7 +56,7 @@ def FEM(Edges):
 
     for elx in range(0, nelx):
         for ely in range(0, nely):
-            if membershiptest((elx), (nely-ely), Edges) == True:
+            if _membershiptest((elx), (nely-ely), Edges) == True:
                 x[ely][elx] = 0
                 e.append(elx*nely + ely+1)
 
@@ -95,10 +95,10 @@ def FEM(Edges):
     iK = np.reshape(np.kron(edofMat, np.ones([8, 1])), (64*nelx*nely, 1))
     jK = np.reshape(np.kron(edofMat, np.ones([1, 8])), (64*nelx*nely, 1))
 
-    xT = np.multiply(np.reshape(np.transpose(x), (1, 200)), E0)
+    xT = np.multiply(np.reshape(np.transpose(x), (1, nelx*nely)), E0)
     m = 0
     n = 0
-    KE1 = np.zeros([64, 200])
+    KE1 = np.zeros([64, nelx*nely])
 
     for i in range(0, 8):
         for j in range(0, 8):
