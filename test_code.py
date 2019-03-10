@@ -11,9 +11,9 @@ mass_old = B.mass
 gmass_r_old = B.gmass_r
 gmass_rld_old = B.gmass_rld
 
-rld_new = [0]*len(LD)
-for i in range(0,len(LD)):
-    rld_new[i] = -0.2 + 0.4*random.uniform(0,1) + LD[i].radius
+rld_new = [0]*len(B.rld)
+for i in range(0,len(B.rld)):
+    rld_new[i] = -0.2 + 0.4*random.uniform(0,1) + B.rld[i]
 data = B.update(rld_new)
 r_new = data['r']
 sigma_new = data['sigma']
