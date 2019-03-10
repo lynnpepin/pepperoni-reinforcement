@@ -2,7 +2,9 @@ import unittest
 import numpy as np
 from reinforcement_utils import State#, _read_update_data()
 
-class StateTests(unittest.TestCase):
+class StateEnvironmentalTests(unittest.TestCase):
+    """Test all the environmental/external values for the state,
+    i.e. wholly ignoring any agent-internal state values."""
     def setUp(self):
         self.an_array = np.array([1, 2, 3.0])
         self.a_larger_array = np.array([1, 2, 3.0, 4.0, 5])
@@ -220,7 +222,30 @@ class StateTests(unittest.TestCase):
         state._set_points(np.array([[1,-1]]), check_y = False)
         # todo: points are R n*2, other vectors are R n, mass and stress are numbers
 
-TestCases = [StateTests]
+class StateInternalTests(unittest.TestCase):
+    """Test all the internal state values."""
+    def setUp(self):
+        pass
+        
+    def tearDown(self):
+        pass
+
+    def test_example(self):
+        pass
+
+class StateFromUpdateTest(unittest.TestCase):
+    """Test the _state_from_update(update(r_B)) helper function."""
+    def setUp(self):
+        pass
+        
+    def tearDown(self):
+        pass
+
+    def test_example(self):
+        pass
+    
+
+TestCases = [StateEnvironmentalTests]
 
 def run_tests(TestCaseList):
     for testcase in TestCaseList:

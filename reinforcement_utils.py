@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def _check_array_and_shape(x, new_x):
     """Check to ensure new_x is a numpy array with the same shape as x."""
     if not isinstance(new_x, np.ndarray):
@@ -11,6 +12,7 @@ def _check_array_and_shape(x, new_x):
         if not(x.shape == new_x.shape):
             raise ValueError("Shape mismatch setting new value.")
 
+
 def _check_number_and_geqzero(x):
     """Ensure x is a nubmer >= 0."""
     if not isinstance(x, (int, float)):
@@ -18,20 +20,99 @@ def _check_number_and_geqzero(x):
     elif not (x > 0):
         raise ValueError("Not greater than zero!")
 
-class State():
+
+def _state_from_update(update_data, state = None):
+    """Focal point from circlepacking/FEM code to RL side.
+    
+    Expected to be updated possibly often as the spec for update(rld_new) changes.
+    Modifies and returns state if provided, or returns a new state, from the
+    update data.
+    
+    # Arguments
+        update_data, as provided by pepperoni.BridgeHoleDesign().update(r_B).
+        Currently provided as a dict:
+        {   'r'             : List of float,
+            # MISSING - rld
+            'sigma'         : Float, representing stress,
+            'mass':         : Float,
+            'gmass_r'       : List of float; gradient w.r.t. r of mass,
+            'gmass_rld'     : List of float, ???,
+            'geometry_info' : Dictionary, of format:
+                                        # Lists of float:
+                {   'angles_ld'         : Surround angles of leading dancers,
+                    'angles_cb'         : Surround angles of boundary circles,
+                                        # Float:
+                    'total_length_ld'   : Total length of leading edges,
+                    'total_length_cb'   : Total edge length of boundary,
+                                        # List of float:
+                    'edges_ld'          : Edge lengths of leading dancers,
+                    'edges_cb'          : Edge lengths of boundary circles,
+                                        # Numpy arrays of shape (*,2):
+                    'positions_ld'      : Positions of leading dancers,
+                    'positions_cb'      : Positions of boundary circles,
+                    'positions_all'     : All position values
+                }
+        }
+
+    
+    # Returns instance of State()
+    """
+    raise NotImplementedError
+
+
+class StatePreprocessor:
+    """Class which stores important meta-variables about the state,
+       and provides a learning-algorithm ready vector.
+       
+    # Init Arguments
+        l, w:  Number, number. Length and width of the bridge.
+        max_mass:  Number, the maximum mass/area of the bridge.
+        allowable_stress:  Number.
+        OtherS: To be contemplated.
+    
+    # Attributes
+        l:  Float
+        w:  Float
+        max_mass:  Float
+        allowable_stress:  Float
+
+    # Methods
+        preprocess(state): Instance of state to 1d Numpy array
+        
+    """
+    def __init__(self):
+        raise NotImplementedError
+
+
+def _preprocess(l=2.0, w=3.0, max_mass=6.0, allowable_stress=1.0, state=None):
+    """Standalone backbone of StatePreprocessor.
+    
+    # Arguments
+        l:  Float
+        w:  Float
+        max_mass:  Float
+        allowable_stress:  Float
+        state:  Instance of State()
+        
+    # Returns 1d Numpy array, preprocessed and ready for use in a neural network.
+    """
+    raise NotImplementedError
+
+
+class State:
     """Stores environmental state of our RL agent. A glorified dataclass.
     
     
-    # Arguments
-        All arguments are an observation of the state of the bridge.
-        r_B: 1d numpy array. Radii of leading dancers / boundary circles
-        r: 1d numpy array. Radii of all circles. |r| <= |r_B|
-        stress: Number, the stress/sigma of the bridge.
-        mass: Number, the mass of the bridge.
-        grad_mass: 1d numpy array, same size as r. Gradient of Mass w.r.t. r.
-        points: 2d numpy array, shape (*,2). Represents x,y positions.
-        edge_lengths: 1d numpy array of the edge lengths between the points.
-        angles: 1d numpy array represnting the angles of all incident edges.
+    # Init Arguments
+        # All arguments are an observation of the state of the bridge.
+        r_B:  1d numpy array. Radii of leading dancers / boundary circles
+        r:  1d numpy array. Radii of all circles. |r| <= |r_B|
+        stress:  Number, the stress/sigma of the bridge.
+        mass:  Number, the mass of the bridge.
+        grad_mass:  1d numpy array, same size as r. Gradient of Mass w.r.t. r.
+        points:  2d numpy array, shape (*,2). Represents x,y positions.
+        edge_lengths:  1d numpy array of the edge lengths between the points.
+        angles:  1d numpy array represnting the angles of all incident edges.
             (Note that this geographic information is unstructured.)
     
     # Attributes
@@ -41,7 +122,8 @@ class State():
     # Methods
         Getters and _setters for each attribute,
         _set_state(...) to set each attribute at once. Returns self.
-        Consider: A .copy() attribute, returning State
+        
+        To be considered: A .copy() attribute, returning State
     
     # Examples
         # Initialize an empty state and set some basic values
