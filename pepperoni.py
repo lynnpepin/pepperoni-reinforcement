@@ -27,8 +27,13 @@ class BridgeHoleDesign:
     gmass_rld = [] # list of float, the gradient of mass repsect ot leading dancers
     angles_ld = [] # list of float, the surround angles of leading dancers
     angles_cb = [] # list of float, the surround angles of boundary circles
-    edge_length_ld = [] # float, the totall edge length of leading dancers
-    edge_length_cb = [] # float, the totall edge length of boundary circles
+    total_length_ld = [] # float, the totall edge length of leading dancers
+    total_length_cb = [] # float, the totall edge length of boundary circles
+    edges_ld = [] # list of float, the edge list of leading dancers
+    edges_cb = [] # list of float, the edge list of boundary circles
+    positions_ld = [] # nX2 array, the x and y coordinates of center of leading dancers
+    positions_cb = [] # nX2 array, the x and y coordinates of center of boundary circles
+    positions_all = []# nX2 array, the x and y coordinates of center of all circles
     _tri = [] # Delaunay, a triangluation instance
     _circles = [] # list of _CircleVertex, recording information of all circles
     _halfedges = [] # list of _HalfEdge, the halfedges in the triangulation
@@ -69,10 +74,15 @@ class BridgeHoleDesign:
         # get the surround angles of boundary circles
         self.angles_cb = _get_surround_angles(self._cb)
         # get the length of edges linking by leading dancers
-        self.edge_length_ld = _get_edge_length(self._LD)
+        self.total_length_ld, self.edges_ld = _get_edge_length(self._LD,0)
         # get the length of edges linking by boundary circles
-        self.edge_length_cb = _get_edge_length(self._cb)
-
+        self.total_length_cb, self.edges_cb = _get_edge_length(self._cb,1)
+        # get the positions of leading dancers
+        self.positions_ld = _get_positions(self._LD)
+         # get the positions of boundary circles
+        self.positions_cb = _get_positions(self._cb)
+         # get the positions of all circles
+        self.positions_all = _get_positions(self._circles)
         
     def update(self, rld_new):
         """
@@ -104,12 +114,20 @@ class BridgeHoleDesign:
         
         self.angles_cb = _get_surround_angles(self._cb)
         
-        self.edge_length_ld = _get_edge_length(self._LD)
+        self.total_length_ld, self.edges_ld = _get_edge_length(self._LD,0)
         
-        self.edge_length_cb = _get_edge_length(self._cb)
+        self.total_length_cb, self.edges_cb = _get_edge_length(self._cb,1)
+        # get the positions of leading dancers
+        self.positions_ld = _get_positions(self._LD)
+         # get the positions of boundary circles
+        self.positions_cb = _get_positions(self._cb)
+         # get the positions of all circles
+        self.positions_all = _get_positions(self._circles)
         
         geo = {'angles_ld': self.angles_ld, 'angles_cb': self.angles_cb, 
-               'edge_length_ld': self.edge_length_ld, 'edge_length_cb': self.edge_length_cb}
+               'total_length_ld': self.total_length_ld, 'total_length_cb': self.total_length_cb,
+               'edges_ld': self.edges_ld, 'edges_cb': self.edges_cb, 'positions_ld': self.positions_ld,
+               'positions_cb': self.positions_cb, 'positions_all': self.positions_all}
         
         data = {'r': self.r, 'sigma': self.sigma, 'mass': self.mass, 'gmass_r': self.gmass_r,
                 'gmass_rld': self.gmass_rld, 'geometry_info': geo}
@@ -200,11 +218,23 @@ def _get_surround_angles(Cir):
         ang[i] = _theta_arround(Cir[i])
     return ang
         
-def _get_edge_length(Cir):
-    e_l = 0
+def _get_edge_length(Cir, closed):
+    edge_list = [0]*(len(Cir)-1)
+    total = 0
     for i in range(0, len(Cir)-1):
-        e_l = e_l + Cir[i].radius + Cir[i+1].radius
-    return e_l        
+        edge_list[i] = Cir[i].radius + Cir[i+1].radius
+        total = total + Cir[i].radius + Cir[i+1].radius
+    if closed == 1:
+        edge_list.append(Cir[0].radius + Cir[-1].radius)
+        total = total + Cir[0].radius + Cir[-1].radius
+    return total, edge_list        
+
+def _get_positions(Cir):
+    p = np.zeros( (len(Cir),2) )
+    for i in range(0, len(Cir)):
+        p[i][0] = Cir[i].x
+        p[i][1] = Cir[i].y
+    return p
 
 
 class _CircleVertex:

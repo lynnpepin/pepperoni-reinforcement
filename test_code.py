@@ -21,9 +21,12 @@ mass_new = data['mass']
 gmass_r_new = data['gmass_r']
 gmass_rld_new = data['gmass_rld']
 geo_new = data['geometry_info']
-edge_length_rl = geo_new['edge_length_ld']
-edge_length_cb = geo_new['edge_length_cb']
+length_rl = geo_new['total_length_ld']
+length_cb = geo_new['total_length_cb']
 angles_ld = geo_new['angles_ld']
+edges_ld = geo_new['edges_ld']
+edges_cb = geo_new['edges_cb']
+positions_ld = geo_new['positions_ld']
 ######################################################
 delta = 1.0 # distance between the points of triangulation
 eps = 0.01 # error tolerate for circle packing calculation
