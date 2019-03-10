@@ -28,15 +28,22 @@ def _state_from_update(update_data, state = None):
     Modifies and returns state if provided, or returns a new state, from the
     update data.
     
+    Note: Of all the circles, some subset are boundary circles (cb).
+          Of those, a subset are hte leading dances (ld).
+    
     # Arguments
         update_data, as provided by pepperoni.BridgeHoleDesign().update(r_B).
+        I.e. The state of the bridge after updating to the new leading dances r_B:
         Currently provided as a dict:
-        {   'r'             : List of float,
-            # MISSING - rld
+        {   'r'             : List of float.
+                            # rld not provided, since that is the input to
+                            # update(). The agent should know it itself.
             'sigma'         : Float, representing stress,
-            'mass':         : Float,
+            'mass':         : Float, mass of the bridge after update.
             'gmass_r'       : List of float; gradient w.r.t. r of mass,
-            'gmass_rld'     : List of float, ???,
+            'gmass_rld'     : List of float, 
+                            # gmass_rld are those values of gmass_r which
+                            # correspond to indices of leading dancers.
             'geometry_info' : Dictionary, of format:
                                         # Lists of float:
                 {   'angles_ld'         : Surround angles of leading dancers,
