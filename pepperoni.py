@@ -19,6 +19,7 @@ class BridgeHoleDesign:
     nely = 10 # the number of elements in y direction for FEM
     nelx = 20 # the number of elements in x direction for FEM
     r = [] # List of float, the radii of all circles
+    rb = [] # List of float, the radii of boundary circles
     rld = [] # List of float, the radii of leading dancers
     sigma = [] # float, the maximum stress in the bridge under the loads
     area = [] # float, the area of the hole
@@ -56,7 +57,7 @@ class BridgeHoleDesign:
         self._tri = _generate_triangulation(self.l, self.h, self.a_ell, 
                                             self.b_ell, self.delta)
         # create the circle packing based on the triangulation created above
-        self.rld, self.r, self._LD, self._AD, self._circles, self._faces, self._cb, self._anchor_x, \
+        self.rld, self.rb, self.r, self._LD, self._AD, self._circles, self._faces, self._cb, self._anchor_x, \
             self._anchor_y, self._cb_origin = _generate_circlepacking(self._tri, 
             self.delta, self.eps, self.delta_r)
         # generate the boundary edges of the hole, which will be used in FEM    
@@ -98,8 +99,8 @@ class BridgeHoleDesign:
             self.angles_ld: list of float, 
         """
         # modify the cricle packing given a new radii of leading dancers
-        _modify_circlepacking(rld_new, self.r, self._LD, self._AD, self._circles,
-            0.1*self.eps, 0.1*self.delta_r)
+        _modify_circlepacking(rld_new, self.rb, self.r, self._LD, self._AD, self._cb,
+            self._circles, 0.1*self.eps, 0.1*self.delta_r)
         # modify the boudanry edge as the circle packing changes
         _modify_boundary_edges(self._edges, self._LD, self._circles, 
             self._faces, self._anchor_x, self._anchor_y, self._cb_origin)
@@ -129,8 +130,8 @@ class BridgeHoleDesign:
                'edges_ld': self.edges_ld, 'edges_cb': self.edges_cb, 'positions_ld': self.positions_ld,
                'positions_cb': self.positions_cb, 'positions_all': self.positions_all}
         
-        data = {'r': self.r, 'sigma': self.sigma, 'mass': self.mass, 'gmass_r': self.gmass_r,
-                'gmass_rld': self.gmass_rld, 'geometry_info': geo}
+        data = {'r': self.r,'rb': self.rb, 'sigma': self.sigma, 'mass': self.mass, 
+                'gmass_r': self.gmass_r,'gmass_rld': self.gmass_rld, 'geometry_info': geo}
         return data
                 
     def draw_circlepacking(self):
@@ -856,18 +857,22 @@ def _generate_circlepacking(tri, delta, eps, delta_r):
         c.x = c.x * adjust_ratio
         c.y = c.y * adjust_ratio
         c.radius = c.radius * adjust_ratio
-    # output radii of LD and all circles
-    rld = []
-    for c in LD:
-        rld.append(c.radius)
+    # output radii of LD, boundary and all circles
+    rld = [0]*len(LD)
+    for i in range(0,len(LD)):
+        rld[i] = LD[i].radius
+        
+    rb = [0]*len(cb)
+    for i in range(0,len(cb)):
+        rb[i] = cb[i].radius
 
-    r = []
-    for c in circles:
-        r.append(c.radius)
-    return rld, r, LD, AD, circles, faces, cb, anchor_x, anchor_y, origin
+    r = [0]*len(circles)
+    for i in range(0,len(circles)):
+        r[i] = circles[i].radius
+    return rld, rb, r, LD, AD, circles, faces, cb, anchor_x, anchor_y, origin
 
 
-def _modify_circlepacking(rld_new, r, LD, AD, circles, eps, delta_r):
+def _modify_circlepacking(rld_new, rb, r, LD, AD, cb, circles, eps, delta_r):
     """
     Add modification to the radii of leading dancers, then calculate
     the radii of accompanying dancers
@@ -882,8 +887,11 @@ def _modify_circlepacking(rld_new, r, LD, AD, circles, eps, delta_r):
         LD[i].radius = rld_new[i]
     _calculate_radii(AD, eps, delta_r)
     # output radii of all circles
-    for ci in range(0, len(circles)):
-        r[ci] = circles[ci].radius
+    for i in range(0,len(cb)):
+        rb[i] = cb[i].radius
+    
+    for i in range(0, len(circles)):
+        r[i] = circles[i].radius
 
 
 def _generate_boundary_edges(LD, circles, faces, anchor_x, anchor_y, origin):

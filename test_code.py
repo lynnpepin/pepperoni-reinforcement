@@ -37,7 +37,7 @@ x_tri = [0, 1, 0];
 y_tri = [0, 0, 1];
 points_tri = np.vstack([x_tri,y_tri]).T 
 tri1 = Delaunay(points_tri)
-rld, r, LD1, AD1, circles1, faces1, cb1, anchor_x1, anchor_y1, cb_origin1 = _generate_circlepacking(tri1, 
+rld1, rb1, r1, LD1, AD1, circles1, faces1, cb1, anchor_x1, anchor_y1, cb_origin1 = _generate_circlepacking(tri1, 
                                      0.5, 0.1*eps, 0.1*delta_r)
 print('radii of circles1')
 print('r1 ', 'Exact Values ', 1-1/np.sqrt(2), ' Calculated ', circles1[0].radius )
@@ -56,7 +56,7 @@ nelx = 20
 tri= _generate_triangulation(l, h, a_ell, b_ell, delta)
 
 
-rld, r, LD, AD, circles, faces, cb, anchor_x, anchor_y, cb_origin = _generate_circlepacking(tri, 
+rld, rb, r, LD, AD, circles, faces, cb, anchor_x, anchor_y, cb_origin = _generate_circlepacking(tri, 
                                      delta, eps, delta_r)
 _draw_circles(circles,l)
 
@@ -71,7 +71,7 @@ yesorno2 = _in_circles(circles[0],AD)
 rld_new = [0]*len(LD)
 for i in range(0,len(LD)):
     rld_new[i] = -0.2 + 0.4*random.uniform(0,1) + LD[i].radius
-_modify_circlepacking(rld_new, r, LD, AD,circles, 0.1*eps, 0.1*delta_r)
+_modify_circlepacking(rld_new,rb, r, LD, AD, cb, circles, 0.1*eps, 0.1*delta_r)
     
 
     
