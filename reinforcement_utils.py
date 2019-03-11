@@ -32,12 +32,13 @@ def _state_from_update(update_data, state = None):
           Of those, a subset are hte leading dances (ld).
     
     # Arguments
-        update_data, as provided by pepperoni.BridgeHoleDesign().update(r_B).
-        I.e. The state of the bridge after updating to the new leading dances r_B:
+        update_data, as provided by pepperoni.BridgeHoleDesign().update(rld).
+        I.e. The state of the bridge after updating to the new leading dances rld:
         Currently provided as a dict:
         {   'r'             : List of float.
                             # rld not provided, since that is the input to
                             # update(). The agent should know it itself.
+            'rb'            : List of float, presumably rcb.
             'sigma'         : Float, representing stress,
             'mass':         : Float, mass of the bridge after update.
             'gmass_r'       : List of float; gradient w.r.t. r of mass,
