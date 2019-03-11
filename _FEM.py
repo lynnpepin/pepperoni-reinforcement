@@ -192,8 +192,8 @@ def _FEM(Edges,nely,nelx):
         for j in range(0, 8):
             d[j][0] = U[np.int(edofMat[i][j])-1]
 
-        sigma[i] = np.reshape(E0/(0.5*(1-np.power(nu, 2))) * np.dot([[1, nu], [nu, 1]], np.dot(
-            [[-1, 0, -1, 0, 1, 0, -1, 0], [0, -1, 0, -1, 0, 1, 0, 1]], d)), (1, 2))/10
+        sigma[i] = np.reshape(E0/(5*(1-np.power(nu, 2))) * np.dot([[1, nu], [nu, 1]], np.dot(
+            [[-1, 0, -1, 0, 1, 0, -1, 0], [0, -1, 0, -1, 0, 1, 0, 1]], d)), (1, 2))
     sigma = abs(sigma)
     maxsigma = np.max(sigma)
     area = (nelx*nely)-len(e)
