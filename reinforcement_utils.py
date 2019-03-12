@@ -1,6 +1,30 @@
 """reinforcement_utils.py
-TODO
+
+Utilities for reinforcement learning agent.
+Provides the point of entry for data from pepperoni into the RL code,
+  as well as State and state preprocessing utility for the RL code.
+
+Provides:
+    State():
+        Class that holds relevant state variables for the learning agent.
+        Notation is abused. E.g. The agent might use a history of states,
+        which would be some list-like of State().
+                
+    state_from_update(data):
+        The focal point between pepperoni.py and the RL code.
+        data is a dict of list, number, or dict, as returned by
+          pepperoni.ridgeHoleDesign().update().
+        Returns an instance of State().
+
+    StatePreprocessor():
+        NotImplemented!
+        Class which holds preprocessor values, wrapping _preprocess.
+    
+    _preprocess():
+        NotImplemented!
+        Preprocesses a State() instance and returns a numpy ndarray.
 """
+
 
 import numpy as np
 
@@ -17,7 +41,7 @@ def state_from_update(data, state = None):
     # Arguments
         update_data, as provided by pepperoni.BridgeHoleDesign().update(rld).
         I.e. The state of the bridge after updating to the new leading dances rld:
-        Currently provided as a dict:
+        Currently provided from .update(rld) as a dict:
         {   'raccb'         : List of float; radii of accompanying boundary circles.
             'ri'            : List of float; radii of interior circles.
                             # rld not provided, since that is the input to
@@ -44,21 +68,44 @@ def state_from_update(data, state = None):
                     'positions_ci'      : Positions of the interior points
                 }
         }
+        
+        state (optional): An instance of state to update. If not set, a new
+            instance is created and reutrned.
+
+    # Returns an instance of State() with its attributes set/updated.
     """
-    return State(raccb              = data['raccb'],
-                 ri                 = data['ri'],
-                 stress             = data['sigma'],
-                 mass               = data['mass'],
-                 grad_mass          = data['gmass_r'],
-                 grad_mass_ld       = data['gmass_rld'],
-                 edge_lengths_ld    = data['geometry_info']['edges_ld'],
-                 edge_lengths_accb  = data['geometry_info']['edges_accb'],
-                 angles_ld          = data['geometry_info']['angles_ld'],
-                 angles_accb        = data['geometry_info']['angles_accb'],
-                 points_ld          = data['geometry_info']['positions_ld'],
-                 points_accb        = data['geometry_info']['positions_accb'],
-                 points_ci          = data['geometry_info']['positions_ci'])
-    # NOTE: rld is not defined!
+    # Note that rld is not provided, and so rld is not set/updated by this.
+    if state:
+        # an instance of state is provided; modify that instance, and return it.
+        state._set_state(raccb              = data['raccb'],
+                         ri                 = data['ri'],
+                         stress             = data['sigma'],
+                         mass               = data['mass'],
+                         grad_mass          = data['gmass_r'],
+                         grad_mass_ld       = data['gmass_rld'],
+                         edge_lengths_ld    = data['geometry_info']['edges_ld'],
+                         edge_lengths_accb  = data['geometry_info']['edges_accb'],
+                         angles_ld          = data['geometry_info']['angles_ld'],
+                         angles_accb        = data['geometry_info']['angles_accb'],
+                         points_ld          = data['geometry_info']['positions_ld'],
+                         points_accb        = data['geometry_info']['positions_accb'],
+                         points_ci          = data['geometry_info']['positions_ci'])
+        return state
+    else:
+        # Create a new instance of state
+        return State(raccb              = data['raccb'],
+                     ri                 = data['ri'],
+                     stress             = data['sigma'],
+                     mass               = data['mass'],
+                     grad_mass          = data['gmass_r'],
+                     grad_mass_ld       = data['gmass_rld'],
+                     edge_lengths_ld    = data['geometry_info']['edges_ld'],
+                     edge_lengths_accb  = data['geometry_info']['edges_accb'],
+                     angles_ld          = data['geometry_info']['angles_ld'],
+                     angles_accb        = data['geometry_info']['angles_accb'],
+                     points_ld          = data['geometry_info']['positions_ld'],
+                     points_accb        = data['geometry_info']['positions_accb'],
+                     points_ci          = data['geometry_info']['positions_ci'])
 
 class StatePreprocessor:
     """Class which stores important meta-variables about the state,

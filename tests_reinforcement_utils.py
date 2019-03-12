@@ -1,6 +1,6 @@
-"""tests.py
+"""tests_reinforcement_utils.py
 
-TODO
+Unit tests for reinforcement_utils.py.
 """
 
 import unittest
@@ -482,7 +482,7 @@ class StateFromUpdateTest(unittest.TestCase):
                                       data  = self.data1)
     
     # todo: More tests, on more examples, whne they become available.
-    
+    # todo: Test state_from_update(data, instance of state)
 
 
 TestCases = [StateEnvironmentalTests,
