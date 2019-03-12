@@ -396,7 +396,6 @@ class StateFromUpdateTest(unittest.TestCase):
     # todo: Test state_from_update(data, instance of state)
 
 class PreprocessTest(unittest.TestCase):
-
     def setUp(self):
         pass
     

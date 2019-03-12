@@ -1,4 +1,8 @@
 import numpy as np
+
+# Large dictionary, example output of 
+# bhd = pepperoni.BridgeHoleDesign(); bhd.update(bhd.rld)
+
 example_update_1 = {
             'raccb'     : [0.78637574908387, 0.30650510646465656, 0.8333341891282224, 0.32905813582954196, 0.7552393486837017,
                            0.5910110035709384, 0.28963873290829917, 0.8464361369979728, 0.5063532680048215, 0.22494013807272537,
