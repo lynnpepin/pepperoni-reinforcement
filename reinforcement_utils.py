@@ -75,37 +75,24 @@ def state_from_update(data, state = None):
     # Returns an instance of State() with its attributes set/updated.
     """
     # Note that rld is not provided, and so rld is not set/updated by this.
-    if state:
+    if state is None:
+        state = State()
         # an instance of state is provided; modify that instance, and return it.
-        state._set_state(raccb              = data['raccb'],
-                         ri                 = data['ri'],
-                         stress             = data['sigma'],
-                         mass               = data['mass'],
-                         grad_mass          = data['gmass_r'],
-                         grad_mass_ld       = data['gmass_rld'],
-                         edge_lengths_ld    = data['geometry_info']['edges_ld'],
-                         edge_lengths_accb  = data['geometry_info']['edges_accb'],
-                         angles_ld          = data['geometry_info']['angles_ld'],
-                         angles_accb        = data['geometry_info']['angles_accb'],
-                         points_ld          = data['geometry_info']['positions_ld'],
-                         points_accb        = data['geometry_info']['positions_accb'],
-                         points_ci          = data['geometry_info']['positions_ci'])
-        return state
-    else:
-        # Create a new instance of state
-        return State(raccb              = data['raccb'],
-                     ri                 = data['ri'],
-                     stress             = data['sigma'],
-                     mass               = data['mass'],
-                     grad_mass          = data['gmass_r'],
-                     grad_mass_ld       = data['gmass_rld'],
-                     edge_lengths_ld    = data['geometry_info']['edges_ld'],
-                     edge_lengths_accb  = data['geometry_info']['edges_accb'],
-                     angles_ld          = data['geometry_info']['angles_ld'],
-                     angles_accb        = data['geometry_info']['angles_accb'],
-                     points_ld          = data['geometry_info']['positions_ld'],
-                     points_accb        = data['geometry_info']['positions_accb'],
-                     points_ci          = data['geometry_info']['positions_ci'])
+    state._set_state(raccb              = np.array(data['raccb']),
+                     ri                 = np.array(data['ri']),
+                     stress             =          data['sigma'],
+                     mass               =          data['mass'],
+                     grad_mass          = np.array(data['gmass_r']),
+                     grad_mass_ld       = np.array(data['gmass_rld']),
+                     edge_lengths_ld    = np.array(data['geometry_info']['edges_ld']),
+                     edge_lengths_accb  = np.array(data['geometry_info']['edges_accb']),
+                     angles_ld          = np.array(data['geometry_info']['angles_ld']),
+                     angles_accb        = np.array(data['geometry_info']['angles_accb']),
+                     # positions are provided as numpy arrays for some reason
+                     points_ld          =          data['geometry_info']['positions_ld'],
+                     points_accb        =          data['geometry_info']['positions_accb'],
+                     points_ci          =          data['geometry_info']['positions_ci'])
+    return state
 
 
 
@@ -354,15 +341,15 @@ class State:
     
     def _set_rld(self,rld):
         _check_array_and_shape(self.get_rld(), rld)
-        self._rld = np.array(rld)
+        self._rld = rld
 
     def _set_raccb(self,raccb):
         _check_array_and_shape(self.get_raccb(), raccb)
-        self._raccb = np.array(raccb)
+        self._raccb = raccb
 
     def _set_ri(self,ri):
         _check_array_and_shape(self.get_ri(), ri)
-        self._ri = np.array(ri)
+        self._ri = ri
 
     def _set_stress(self,stress):
         _check_number_and_geqzero(stress)
@@ -380,45 +367,45 @@ class State:
             size_r = len(self.get_rld()) + len(self.get_raccb()) + len(self.get_ri())
             if size_r != len(grad_mass):
                 raise ValueError("Can't set grad_mass where |grad_mass| != |r_all|.")
-        self._grad_mass = np.array(grad_mass)
+        self._grad_mass = grad_mass
 
     def _set_grad_mass_ld(self,grad_mass_ld):
         if self.get_rld() is not None:
             if len(self.get_rld()) != len(grad_mass_ld):
                 raise ValueError("Can't set grad_mass where |grad_mass| != |rld|.")
         _check_array_and_shape(self.get_grad_mass_ld(), grad_mass_ld)
-        self._grad_mass_ld = np.array(grad_mass_ld)
+        self._grad_mass_ld = grad_mass_ld
 
     def _set_edge_lengths_ld(self,edge_lengths_ld):
         _check_array_and_shape(self.get_edge_lengths_ld(), edge_lengths_ld)
-        self._edge_lengths_ld = np.array(edge_lengths_ld)
+        self._edge_lengths_ld =  edge_lengths_ld
 
     def _set_edge_lengths_accb(self,edge_lengths_accb):
         _check_array_and_shape(self.get_edge_lengths_accb(), edge_lengths_accb)
-        self._edge_lengths_accb = np.array(edge_lengths_accb)
+        self._edge_lengths_accb = edge_lengths_accb
 
     def _set_angles_ld(self,angles_ld):
         _check_array_and_shape(self.get_angles_ld(), angles_ld)
-        self._angles_ld = np.array(angles_ld)
+        self._angles_ld = angles_ld
 
     def _set_angles_accb(self,angles_accb):
         _check_array_and_shape(self.get_angles_accb(), angles_accb)
-        self._angles_accb = np.array(angles_accb)
+        self._angles_accb = angles_accb
 
     def _set_points_ld(self,points_ld):
         _check_array_and_shape(self.get_points_ld(), points_ld, one_d = False)
         _check_points(points_ld)
-        self._points_ld = np.array(points_ld)
+        self._points_ld = points_ld
 
     def _set_points_accb(self,points_accb):
         _check_array_and_shape(self.get_points_accb(), points_accb, one_d = False)
         _check_points(points_accb)
-        self._points_accb = np.array(points_accb)
+        self._points_accb = points_accb
 
     def _set_points_ci(self,points_ci):
         _check_array_and_shape(self.get_points_ci(), points_ci, one_d = False)
         _check_points(points_ci)
-        self._points_ci = np.array(points_ci)
+        self._points_ci = points_ci
 
     
     def _set_state(self, rld                = None,
@@ -484,15 +471,15 @@ class State:
 def _check_array_and_shape(x, new_x, one_d=True):
     """Check to ensure new_x as an array is the same shape as x.
     if 1d=True, make sure the shape of new_x is (*,)"""
-    if not isinstance(new_x, (list, tuple, np.ndarray)):
-        raise TypeError("Input must be a list, tuple, or array!")
+    if not isinstance(new_x, np.ndarray):
+        raise TypeError("Input must be a numpy array!")
     if isinstance(x, np.ndarray):
         # if x is an array, make sure
         # x and new_x have matching shape.  
-        if not(x.shape == np.array(new_x).shape):
+        if not(x.shape == new_x.shape):
             raise ValueError("Shape mismatch setting new value.")
-        if one_d and len(new_x.shape) != 1:
-            raise TypeError("Must be a 1d array.")
+    if one_d and isinstance(new_x, np.ndarray) and len(new_x.shape) != 1:
+        raise TypeError("Must be a 1d array.")
 
 
 def _check_number_and_geqzero(x):

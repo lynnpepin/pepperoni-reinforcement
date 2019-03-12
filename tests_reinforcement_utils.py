@@ -388,9 +388,9 @@ class StateFromUpdateTest(unittest.TestCase):
         self.assertEqual(list(state.get_edge_lengths_accb()),	data['geometry_info']['edges_accb'])
         self.assertEqual(list(state.get_angles_ld()),           data['geometry_info']['angles_ld'])
         self.assertEqual(list(state.get_angles_accb()),         data['geometry_info']['angles_accb'])
-        self.assertTrue(np.all(state.get_points_ld()    == data['geometry_info']['positions_ld']))
-        self.assertTrue(np.all(state.get_points_accb()  == data['geometry_info']['positions_accb']))
-        self.assertTrue(np.all(state.get_points_ci()    == data['geometry_info']['positions_ci']))
+        self.assertTrue(np.all(state.get_points_ld()         == data['geometry_info']['positions_ld']))
+        self.assertTrue(np.all(state.get_points_accb()       == data['geometry_info']['positions_accb']))
+        self.assertTrue(np.all(state.get_points_ci()         == data['geometry_info']['positions_ci']))
         return True
 
     def test_example_1(self):
