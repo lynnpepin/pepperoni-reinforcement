@@ -115,7 +115,7 @@ class StatePreprocessor:
         l, w:  Number, number. Length and width of the bridge.
         max_mass:  Number, the maximum mass/area of the bridge.
         allowable_stress:  Number.
-        OtherS: To be contemplated.
+        Others: To be contemplated.
     
     # Attributes
         l:  Float
@@ -130,7 +130,7 @@ class StatePreprocessor:
     def __init__(self):
         raise NotImplementedError
 
-def _preprocess(l=2.0, w=3.0, max_mass=6.0, allowable_stress=1.0, state=None):
+def _preprocess(l=20.0, w=10.0, max_mass=400.0, allowable_stress=200.0, state=None):
     """Standalone backbone of StatePreprocessor.
     
     # Arguments
