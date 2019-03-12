@@ -99,7 +99,7 @@ def state_from_update(data, state = None):
 ####
 # Preprocessing stuff
 ####
-class StatePreprocessor:
+class _StatePreprocessor:
     """Class which stores important meta-variables about the state,
        and provides a learning-algorithm ready vector.
        
@@ -117,7 +117,8 @@ class StatePreprocessor:
 
     # Methods
         preprocess(state): Instance of state to 1d Numpy array
-        
+    
+    # Not yet implemented, but may be useful in the future. Hmm...
     """
     def __init__(self):
         raise NotImplementedError
@@ -126,7 +127,7 @@ class StatePreprocessor:
 def _normalize_01(x, b=1.0, a = 0.0):
     """Normalize x to [0,1] bounds, given max value b and min value a."""
     # todo: Consider generating warnings if x > b or x < a, or if b <= a
-    # TODO: If no b, a, use the max, min of x.
+    # todo: If no b, a, use the max, min of x.
     return (x-a)/(b-a)
 
 

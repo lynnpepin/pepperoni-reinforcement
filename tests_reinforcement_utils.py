@@ -494,7 +494,7 @@ class PreprocessTest(unittest.TestCase):
         vec   = _preprocess(state, l = 20, w = 10, max_mass = 400, allowable_stress = 200)
         # vec.shape should be of shape (n,)
         self.assertEqual(len(vec.shape), 1)
-        # todo; more
+        # todo; more?
         # todo: Consider specific tests on specific values?
         # todo: Check that, without a given key value, the preproccessor
         #       does not add it to the stack. E.g. what if ri is None
@@ -512,3 +512,5 @@ def run_tests(TestCaseList):
 
 if (__name__ == "__main__"):
     run_tests(TestCases)
+
+
