@@ -150,8 +150,8 @@ class StateEnvironmentalTests(unittest.TestCase):
                         ri          = np.array([7,8,9,10,1,2,3]),
                         stress      = 100,
                         mass        = 200,
-                        grad_mass   = np.array([3,2,-1,2]),
-                        grad_mass_ld = np.array([3,2,-1]),
+                        grad_mass   = np.array([3,2,-1,2,5,6,7,8,9,10,1,2,3]),
+                        grad_mass_ld = np.array([3,2,-1,2]),
                         angles_ld   = np.array([1.0, 2.0, -1.0, 0.0]),
                         angles_accb = np.array([1.0, 2.2, -1.1, 0.0]),
                         edge_lengths_ld   = np.array([2,4,2,3]),
@@ -164,8 +164,8 @@ class StateEnvironmentalTests(unittest.TestCase):
         self.assertTrue(np.all(state.get_ri()       == np.array([7,8,9,10,1,2,3])))
         self.assertEqual(state.get_stress(), 100)
         self.assertEqual(state.get_mass(), 200)
-        self.assertTrue(np.all(state.get_grad_mass()    == np.array([3,2,-1,2])))
-        self.assertTrue(np.all(state.get_grad_mass_ld() == np.array([3,2,-1])))
+        self.assertTrue(np.all(state.get_grad_mass()    == np.array([3,2,-1,2,5,6,7,8,9,10,1,2,3])))
+        self.assertTrue(np.all(state.get_grad_mass_ld() == np.array([3,2,-1,2])))
         self.assertTrue(np.all(state.get_angles_ld()    == np.array([1.0, 2.0, -1.0, 0.0])))
         self.assertTrue(np.all(state.get_angles_accb()  == np.array([1.0, 2.2, -1.1, 0.0])))
         self.assertTrue(np.all(state.get_edge_lengths_ld() == np.array([2,4,2,3])))
@@ -184,8 +184,8 @@ class StateEnvironmentalTests(unittest.TestCase):
         self.assertTrue(np.all(state.get_ri()       == np.array([7,8,9,10,1,2,3])))
         self.assertEqual(state.get_stress(), 60)
         self.assertEqual(state.get_mass(), 200)
-        self.assertTrue(np.all(state.get_grad_mass()    == np.array([3,2,-1,2])))
-        self.assertTrue(np.all(state.get_grad_mass_ld() == np.array([3,2,-1])))
+        self.assertTrue(np.all(state.get_grad_mass()    == np.array([3,2,-1,2,5,6,7,8,9,10,1,2,3])))
+        self.assertTrue(np.all(state.get_grad_mass_ld() == np.array([3,2,-1,2])))
         self.assertTrue(np.all(state.get_angles_ld()    == np.array([1.1, 1.9, -1.1, 0.2])))
         self.assertTrue(np.all(state.get_angles_accb()  == np.array([1.0, 2.2, -1.1, 0.0])))
         self.assertTrue(np.all(state.get_edge_lengths_ld() == np.array([2,4,2,3])))
@@ -196,20 +196,20 @@ class StateEnvironmentalTests(unittest.TestCase):
 
     def test_init(self):
         """Ensure init works, and that set_state still works afterwards."""
-        state = State(rld          = np.array([1,2,3,4]),
-                      raccb        = np.array([5,6]),
-                      ri           = np.array([7,8,9,10,1,2,3]),
-                      stress        = 100,
-                      mass          = 200,
-                      grad_mass     = np.array([3,2,-1,2]),
-                      grad_mass_ld  = np.array([3,2,-1]),
-                      angles_ld     = np.array([1.0, 2.0, -1.0, 0.0]),
-                      angles_accb   = np.array([1.0, 2.2, -1.0, 0.0]),
-                      edge_lengths_ld  = np.array([2,4,2,3]),
+        state = State(rld         = np.array([1,2,3,4]),
+                      raccb       = np.array([5,6]),
+                      ri          = np.array([7,8,9,10,1,2,3]),
+                      stress      = 100,
+                      mass        = 200,
+                      grad_mass   = np.array([3,2,-1,2,5,6,7,8,9,10,1,2,3]),
+                      grad_mass_ld = np.array([3,2,-1,2]),
+                      angles_ld   = np.array([1.0, 2.0, -1.0, 0.0]),
+                      angles_accb = np.array([1.0, 2.2, -1.1, 0.0]),
+                      edge_lengths_ld   = np.array([2,4,2,3]),
                       edge_lengths_accb = np.array([2,1,2,3]),
-                      points_ld     = np.array([[1,1],[0,0],[-1,1]]),
-                      points_accb   = np.array([[1,1],[0,0],[-.5,.5]]),
-                      points_ci     = np.array([[1,1],[0,0],[-2,2]]))
+                      points_ld   = np.array([[1,1],[0,0],[-1,1]]),
+                      points_accb = np.array([[1,1],[0,0],[-.5,.5]]),
+                      points_ci   = np.array([[1,1],[0,0],[-2,2]]))
         state._set_state(stress = 60,
                          angles_ld = np.array([1.1, 1.9, -1.1, 0.2]),
                          mass   = 200)
@@ -218,10 +218,10 @@ class StateEnvironmentalTests(unittest.TestCase):
         self.assertTrue(np.all(state.get_ri()       == np.array([7,8,9,10,1,2,3])))
         self.assertEqual(state.get_stress(), 60)
         self.assertEqual(state.get_mass(), 200)
-        self.assertTrue(np.all(state.get_grad_mass()    == np.array([3,2,-1,2])))
-        self.assertTrue(np.all(state.get_grad_mass_ld() == np.array([3,2,-1])))
+        self.assertTrue(np.all(state.get_grad_mass()    == np.array([3,2,-1,2,5,6,7,8,9,10,1,2,3])))
+        self.assertTrue(np.all(state.get_grad_mass_ld() == np.array([3,2,-1,2])))
         self.assertTrue(np.all(state.get_angles_ld()    == np.array([1.1, 1.9, -1.1, 0.2])))
-        self.assertTrue(np.all(state.get_angles_accb()  == np.array([1.0, 2.2, -1.0, 0.0])))
+        self.assertTrue(np.all(state.get_angles_accb()  == np.array([1.0, 2.2, -1.1, 0.0])))
         self.assertTrue(np.all(state.get_edge_lengths_ld() == np.array([2,4,2,3])))
         self.assertTrue(np.all(state.get_edge_lengths_accb() == np.array([2,1,2,3])))
         self.assertTrue(np.all(state.get_points_ld()    == np.array([[1,1],[0,0],[-1,1]])))
@@ -239,15 +239,15 @@ class StateEnvironmentalTests(unittest.TestCase):
                   state._set_angles_ld, state._set_angles_accb,
                   state._set_edge_lengths_ld, state._set_edge_lengths_accb,
                   state._set_points_ld, state._set_points_accb, state._set_points_ci]:
-            self.assertRaises(TypeError, f, ("Some String!",))
-            self.assertRaises(TypeError, f, (None,))
-            self.assertRaises(TypeError, f, (State(),))
+            self.assertRaises(TypeError, f, "Some String!")
+            self.assertRaises(TypeError, f, None)
+            self.assertRaises(TypeError, f, State())
         for f in [state._set_rld, state._set_raccb, state._set_ri,
                   state._set_grad_mass, state._set_grad_mass_ld,
                   state._set_angles_ld, state._set_angles_accb,
                   state._set_edge_lengths_ld, state._set_edge_lengths_accb]:
-            self.assertRaises(TypeError, f, (1234,))
-            self.assertRaises(TypeError, f, (self.a_2by4_matrix,))
+            self.assertRaises(TypeError, f, 1234)
+            self.assertRaises(TypeError, f, np.array([[2,1,3],[4,1,2.1]]))
             
         for f in [state._set_stress, state._set_mass]:
             self.assertRaises(TypeError, f, (self.an_array,))
@@ -264,20 +264,20 @@ class StateEnvironmentalTests(unittest.TestCase):
 
     def test_previous_size_errors(self):
         """Ensure providing arrays of different sizes throws a ValueError"""
-        state = State(rld          = np.array([1,2,3,4]),
-                      raccb        = np.array([5,6]),
-                      ri           = np.array([7,8,9,10,1,2,3]),
-                      stress        = 100,
-                      mass          = 200,
-                      grad_mass     = np.array([3,2,-1,2]),
-                      grad_mass_ld  = np.array([3,2,-1,2]),
-                      angles_ld     = np.array([1.0, 2.0, -1.0]),
-                      angles_accb   = np.array([1.0, 2.0, -1.0]),
-                      edge_lengths_ld  = np.array([2,4,2,3]),
+        state = State(rld         = np.array([1,2,3,4]),
+                      raccb       = np.array([5,6]),
+                      ri          = np.array([7,8,9,10,1,2,3]),
+                      stress      = 100,
+                      mass        = 200,
+                      grad_mass   = np.array([3,2,-1,2,5,6,7,8,9,10,1,2,3]),
+                      grad_mass_ld = np.array([3,2,-1,2]),
+                      angles_ld   = np.array([1.0, 2.0, -1.0, 0.0]),
+                      angles_accb = np.array([1.0, 2.2, -1.1, 0.0]),
+                      edge_lengths_ld   = np.array([2,4,2,3]),
                       edge_lengths_accb = np.array([2,1,2,3]),
-                      points_ld     = np.array([[1,1],[0,0],[-1,1]]),
-                      points_accb   = np.array([[1,1],[0,0],[-.5,.5]]),
-                      points_ci     = np.array([[1,1],[0,0],[-2,2]]))
+                      points_ld   = np.array([[1,1],[0,0],[-1,1]]),
+                      points_accb = np.array([[1,1],[0,0],[-.5,.5]]),
+                      points_ci   = np.array([[1,1],[0,0],[-2,2]]))
         self.assertRaises(ValueError, state._set_rld,   (np.array([1,2,3,3,4])))
         self.assertRaises(ValueError, state._set_rld,   (np.array([1,2,3,3,4])))
         self.assertRaises(ValueError, state._set_rld,   (np.array([[1,2]])))
@@ -291,9 +291,13 @@ class StateEnvironmentalTests(unittest.TestCase):
         self.assertRaises(ValueError, state._set_ri,    (np.array([[1,2]])))
         self.assertRaises(ValueError, state._set_ri,    (np.array([[1,2]])))
         self.assertRaises(ValueError, state._set_grad_mass,     np.array([3,2,0]))
+        self.assertRaises(ValueError, state._set_grad_mass,     np.array([3,2,0]))
         self.assertRaises(ValueError, state._set_grad_mass_ld,  np.array([3,2,0]))
-        self.assertRaises(ValueError, state._set_angles_ld,     np.array([1.0, 2.0, -1.0, 0.0]))
-        self.assertRaises(ValueError, state._set_angles_accb,   np.array([1.0, 2.0, -1.0, 0.0]))
+        self.assertRaises(ValueError, state._set_grad_mass_ld,  np.array([3,2,0]))
+        self.assertRaises(ValueError, state._set_angles_ld,     np.array([1.0, 2.0, -1.0, 0.0, 1.1]))
+        self.assertRaises(ValueError, state._set_angles_ld,     np.array([1.0, 2.0, -1.0, 0.0, 1.1]))
+        self.assertRaises(ValueError, state._set_angles_accb,   np.array([1.0, 2.0, -1.0,]))
+        self.assertRaises(ValueError, state._set_angles_accb,   np.array([1.0, 2.0, -1.0,]))
         self.assertRaises(ValueError, state._set_edge_lengths_ld,   np.array([2,3,2,3,1]))
         self.assertRaises(ValueError, state._set_edge_lengths_accb, np.array([2,3,2,3,1]))
         self.assertRaises(ValueError, state._set_points_ld,     np.array([[1,1],[0,0],[-1,1],[-1,2]]))
@@ -390,9 +394,23 @@ class StateFromUpdateTest(unittest.TestCase):
         return True
 
     def test_example_1(self):
+        """Test equality of example 1"""
         self.data_state_equality_test(state = state_from_update(self.data1),
                                       data  = self.data1)
     
+    def test_returns_type(self):
+        """Make sure it returns numbers or ndarrays."""
+        state = state_from_update(self.data1)
+        for getval in [state.get_rld, state.get_raccb, state.get_ri,
+                       state.get_stress, state.get_mass,
+                       state.get_grad_mass, state.get_grad_mass_ld,
+                       state.get_edge_lengths_ld, state.get_edge_lengths_accb,
+                       state.get_angles_ld, state.get_angles_accb,
+                       state.get_points_ld, state.get_points_accb, state.get_points_ci]:
+            value = getval()
+            if value is not None:
+                self.assertTrue(isinstance(value, (np.ndarray, int, float)))
+
     # todo: More tests, on more examples, whne they become available.
     # todo: Test state_from_update(data, instance of state)
 
@@ -470,9 +488,16 @@ class PreprocessTest(unittest.TestCase):
                       [[0,-1], [0,-1], [-1,0]]])
         np.testing.assert_array_almost_equal(x,y)
     
-    def test_preprocess(self):
-        # todo
-        pass
+    def test_preprocess_example_1_sanitycheck(self):
+        """Make sure _preprocess runs and produces a vector of shape (*,)"""
+        state = state_from_update(example_update_1)
+        vec   = _preprocess(state, l = 20, w = 10, max_mass = 400, allowable_stress = 200)
+        # vec.shape should be of shape (n,)
+        self.assertEqual(len(vec.shape), 1)
+        # todo; more
+        # todo: Consider specific tests on specific values?
+        # todo: Check that, without a given key value, the preproccessor
+        #       does not add it to the stack. E.g. what if ri is None
 
 # class StatePreprocessorTest(unittest.TestCase)
 

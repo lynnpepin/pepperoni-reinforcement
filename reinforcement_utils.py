@@ -107,6 +107,11 @@ def state_from_update(data, state = None):
                      points_accb        = data['geometry_info']['positions_accb'],
                      points_ci          = data['geometry_info']['positions_ci'])
 
+
+
+####
+# Preprocessing stuff
+####
 class StatePreprocessor:
     """Class which stores important meta-variables about the state,
        and provides a learning-algorithm ready vector.
@@ -130,11 +135,13 @@ class StatePreprocessor:
     def __init__(self):
         raise NotImplementedError
 
+
 def _normalize_01(x, b=1.0, a = 0.0):
     """Normalize x to [0,1] bounds, given max value b and min value a."""
     # todo: Consider generating warnings if x > b or x < a, or if b <= a
     # TODO: If no b, a, use the max, min of x.
     return (x-a)/(b-a)
+
 
 def _normalize_angle(x, rad=True):
     """Given an angle, return the (cos(x), sin(x)) pair represnting it.
@@ -145,7 +152,8 @@ def _normalize_angle(x, rad=True):
     
     return np.moveaxis(np.array([np.cos(x), np.sin(x)]), 0, -1)
 
-def _preprocess(l=20.0, w=10.0, max_mass=400.0, allowable_stress=200.0, state=None):
+
+def _preprocess(state = None, l=20.0, w=10.0, max_mass=400.0, allowable_stress=200.0):
     """Standalone backbone of StatePreprocessor.
     
     # Arguments
@@ -157,9 +165,56 @@ def _preprocess(l=20.0, w=10.0, max_mass=400.0, allowable_stress=200.0, state=No
         
     # Returns 1d Numpy array, preprocessed and ready for use in a neural network.
     """
-    raise NotImplementedError
+    length = np.sqrt(l**2 + w**2)
+    out = list()
+    
+    rld = state.get_rld()
+    raccb = state.get_raccb()
+    ri = state.get_ri()
+    stress = state.get_stress()
+    mass = state.get_mass()
+    grad_mass = state.get_grad_mass()
+    grad_mass_ld = state.get_grad_mass_ld()
+    edge_lengths_ld = state.get_edge_lengths_ld()
+    edge_lengths_accb = state.get_edge_lengths_accb()
+    angles_ld = state.get_angles_ld()
+    angles_accb = state.get_angles_accb()
+    points_ld = state.get_points_ld()
+    points_accb = state.get_points_accb()
+    points_ci = state.get_points_ci()
+    
+    euclidean_attrs = [rld, raccb, ri, edge_lengths_ld, edge_lengths_accb,
+                       points_ld, points_accb, points_ci]
+
+    for attr in euclidean_attrs:
+        if attr is not None:
+            attr = (_normalize_01(attr, b = length))
+    
+    for attr in [angles_ld, angles_accb]:
+        if attr is not None:
+            attr = np.array(_normalize_angle(attr))
+
+    if stress is not None:
+        stress = np.array(_normalize_01(stress, b = allowable_stress))
+    
+    if mass is not None:
+        mass = np.array(_normalize_01(mass, b = max_mass))
+
+    attributes = [rld, raccb, ri, stress, mass, grad_mass, grad_mass_ld,
+                  edge_lengths_ld, edge_lengths_accb,
+                  angles_ld, angles_accb, points_ld, points_accb, points_ci]
+
+    for attr in attributes:
+        if attr is not None:
+            out.append(attr.ravel())
+
+    return np.concatenate(out)
 
 
+
+####
+# State stuff
+####
 class State:
     """Stores environmental state of our RL agent. A glorified dataclass.
     
@@ -299,15 +354,15 @@ class State:
     
     def _set_rld(self,rld):
         _check_array_and_shape(self.get_rld(), rld)
-        self._rld = rld
+        self._rld = np.array(rld)
 
     def _set_raccb(self,raccb):
         _check_array_and_shape(self.get_raccb(), raccb)
-        self._raccb = raccb
+        self._raccb = np.array(raccb)
 
     def _set_ri(self,ri):
         _check_array_and_shape(self.get_ri(), ri)
-        self._ri = ri
+        self._ri = np.array(ri)
 
     def _set_stress(self,stress):
         _check_number_and_geqzero(stress)
@@ -325,45 +380,45 @@ class State:
             size_r = len(self.get_rld()) + len(self.get_raccb()) + len(self.get_ri())
             if size_r != len(grad_mass):
                 raise ValueError("Can't set grad_mass where |grad_mass| != |r_all|.")
-        self._grad_mass = grad_mass
+        self._grad_mass = np.array(grad_mass)
 
     def _set_grad_mass_ld(self,grad_mass_ld):
         if self.get_rld() is not None:
             if len(self.get_rld()) != len(grad_mass_ld):
                 raise ValueError("Can't set grad_mass where |grad_mass| != |rld|.")
         _check_array_and_shape(self.get_grad_mass_ld(), grad_mass_ld)
-        self._grad_mass_ld = grad_mass_ld
+        self._grad_mass_ld = np.array(grad_mass_ld)
 
     def _set_edge_lengths_ld(self,edge_lengths_ld):
         _check_array_and_shape(self.get_edge_lengths_ld(), edge_lengths_ld)
-        self._edge_lengths_ld = edge_lengths_ld
+        self._edge_lengths_ld = np.array(edge_lengths_ld)
 
     def _set_edge_lengths_accb(self,edge_lengths_accb):
         _check_array_and_shape(self.get_edge_lengths_accb(), edge_lengths_accb)
-        self._edge_lengths_accb = edge_lengths_accb
+        self._edge_lengths_accb = np.array(edge_lengths_accb)
 
     def _set_angles_ld(self,angles_ld):
         _check_array_and_shape(self.get_angles_ld(), angles_ld)
-        self._angles_ld = angles_ld
+        self._angles_ld = np.array(angles_ld)
 
     def _set_angles_accb(self,angles_accb):
         _check_array_and_shape(self.get_angles_accb(), angles_accb)
-        self._angles_accb = angles_accb    
+        self._angles_accb = np.array(angles_accb)
 
     def _set_points_ld(self,points_ld):
-        _check_array_and_shape(self.get_points_ld(), points_ld)
+        _check_array_and_shape(self.get_points_ld(), points_ld, one_d = False)
         _check_points(points_ld)
-        self._points_ld = points_ld
+        self._points_ld = np.array(points_ld)
 
     def _set_points_accb(self,points_accb):
-        _check_array_and_shape(self.get_points_accb(), points_accb)
+        _check_array_and_shape(self.get_points_accb(), points_accb, one_d = False)
         _check_points(points_accb)
-        self._points_accb = points_accb
+        self._points_accb = np.array(points_accb)
 
     def _set_points_ci(self,points_ci):
-        _check_array_and_shape(self.get_points_ci(), points_ci)
+        _check_array_and_shape(self.get_points_ci(), points_ci, one_d = False)
         _check_points(points_ci)
-        self._points_ci = points_ci
+        self._points_ci = np.array(points_ci)
 
     
     def _set_state(self, rld                = None,
@@ -381,60 +436,63 @@ class State:
                          points_accb        = None,
                          points_ci          = None):
         if rld is not None:
-            self._rld = rld
+            self._set_rld(rld)
 
         if raccb is not None:
-            self._raccb = raccb
+            self._set_raccb(raccb)
 
         if ri is not None:
-            self._ri = ri
+            self._set_ri(ri)
 
         if stress is not None:
-            self._stress = stress
+            self._set_stress(stress)
 
         if mass is not None:
-            self._mass = mass
+            self._set_mass(mass)
 
         if grad_mass is not None:
-            self._grad_mass = grad_mass
+            self._set_grad_mass(grad_mass)
 
         if grad_mass_ld is not None:
-            self._grad_mass_ld = grad_mass_ld
+            self._set_grad_mass_ld(grad_mass_ld)
 
         if edge_lengths_ld is not None:
-            self._edge_lengths_ld = edge_lengths_ld
+            self._set_edge_lengths_ld(edge_lengths_ld)
 
         if edge_lengths_accb is not None:
-            self._edge_lengths_accb = edge_lengths_accb
+            self._set_edge_lengths_accb(edge_lengths_accb)
 
         if angles_ld is not None:
-            self._angles_ld = angles_ld
+            self._set_angles_ld(angles_ld)
 
         if angles_accb is not None:
-            self._angles_accb = angles_accb
+            self._set_angles_accb(angles_accb)
 
         if points_ld is not None:
-            self._points_ld = points_ld
+            self._set_points_ld(points_ld)
 
         if points_accb is not None:
-            self._points_accb = points_accb
+            self._set_points_accb(points_accb)
 
         if points_ci is not None:
-            self._points_ci = points_ci
+            self._set_points_ci(points_ci)
 
         return self
 
+
 # Misc functions used in State()
-def _check_array_and_shape(x, new_x):
-    """Check to ensure new_x is a numpy array with the same shape as x."""
-    if not isinstance(new_x, np.ndarray):
-        
-        raise TypeError(str(type(new_x)) + ": Not a numpy array.")
-    elif isinstance(x, np.ndarray):
+def _check_array_and_shape(x, new_x, one_d=True):
+    """Check to ensure new_x as an array is the same shape as x.
+    if 1d=True, make sure the shape of new_x is (*,)"""
+    if not isinstance(new_x, (list, tuple, np.ndarray)):
+        raise TypeError("Input must be a list, tuple, or array!")
+    if isinstance(x, np.ndarray):
         # if x is an array, make sure
         # x and new_x have matching shape.  
-        if not(x.shape == new_x.shape):
+        if not(x.shape == np.array(new_x).shape):
             raise ValueError("Shape mismatch setting new value.")
+        if one_d and len(new_x.shape) != 1:
+            raise TypeError("Must be a 1d array.")
 
 
 def _check_number_and_geqzero(x):
