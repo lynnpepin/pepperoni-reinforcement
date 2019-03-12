@@ -130,6 +130,21 @@ class StatePreprocessor:
     def __init__(self):
         raise NotImplementedError
 
+def _normalize_01(x, b=1.0, a = 0.0):
+    """Normalize x to [0,1] bounds, given max value b and min value a."""
+    # todo: Consider generating warnings if x > b or x < a, or if b <= a
+    # TODO: If no b, a, use the max, min of x.
+    return (x-a)/(b-a)
+
+def _normalize_angle(x, rad=True):
+    """Given an angle, return the (cos(x), sin(x)) pair represnting it.
+    Given an numpy array of shape (a,b,...,c), returns an array of shape
+    (a,b,...,c,2), where the last value indexes cos or sin."""
+    if not rad:
+        x = x*np.pi/180
+    
+    return np.moveaxis(np.array([np.cos(x), np.sin(x)]), 0, -1)
+
 def _preprocess(l=20.0, w=10.0, max_mass=400.0, allowable_stress=200.0, state=None):
     """Standalone backbone of StatePreprocessor.
     
