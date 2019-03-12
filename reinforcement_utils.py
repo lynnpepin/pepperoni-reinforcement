@@ -21,6 +21,14 @@ def _check_number_and_geqzero(x):
         raise ValueError("Not greater than zero!")
 
 
+def _check_points(points):
+    """Check that np array points is of shape (*2) and of proper values"""
+    if points.shape[1] != 2:
+        raise ValueError("Points must be in the real plane! (Set points of shape (n,2))")    
+    for point in points:
+        if point[1] < 0:
+            raise ValueError("Points y must be greater than 0!")
+
 def _state_from_update(update_data, state = None):
     """Focal point from circlepacking/FEM code to RL side.
     
@@ -267,11 +275,17 @@ class State:
 
     def _set_grad_mass(self,grad_mass):
         _check_array_and_shape(self.get_grad_mass(), grad_mass)
+        if self.get_rld() is not None and \
+           self.get_raccb() is not None and \
+           self.get_ri() is not None:
+            size_r = len(self.get_rld()) + len(self.get_raccb()) + len(self.get_ri())
+            if size_r != len(grad_mass):
+                raise ValueError("Can't set grad_mass where |grad_mass| != |r_all|.")
         self._grad_mass = grad_mass
 
     def _set_grad_mass_ld(self,grad_mass_ld):
         if self.get_rld() is not None:
-            if len(self.get_rld()) != len(grad_mass):
+            if len(self.get_rld()) != len(grad_mass_ld):
                 raise ValueError("Can't set grad_mass where |grad_mass| != |rld|.")
         _check_array_and_shape(self.get_grad_mass_ld(), grad_mass_ld)
         self._grad_mass_ld = grad_mass_ld
@@ -290,12 +304,7 @@ class State:
 
     def _set_angles_accb(self,angles_accb):
         _check_array_and_shape(self.get_angles_accb(), angles_accb)
-        self._angles_accb = angles_accb
-
-    def _check_points(self,points):
-        """Check that np array points is of shape (*2) and of proper values"""
-        if points.shape[1] != 2:
-            raise ValueError("Points must be in the real plane! (Set points of shape (n,2))")        
+        self._angles_accb = angles_accb    
 
     def _set_points_ld(self,points_ld):
         _check_array_and_shape(self.get_points_ld(), points_ld)
@@ -304,7 +313,7 @@ class State:
 
     def _set_points_accb(self,points_accb):
         _check_array_and_shape(self.get_points_accb(), points_accb)
-        _check_points(points_ld)
+        _check_points(points_accb)
         self._points_accb = points_accb
 
     def _set_points_ci(self,points_ci):

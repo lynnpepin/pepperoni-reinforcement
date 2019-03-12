@@ -22,15 +22,15 @@ class StateEnvironmentalTests(unittest.TestCase):
     def test_call(self):
         """Test that we can call each setter, getter, and init."""
         state = State()
-        state._set_ri(self.a_larger_array)
-        state._set_rld(self.an_array)
-        state._set_rcb(self.an_array[:-1])
+        state._set_ri(np.array([0,1,2,3]))
+        state._set_rld(np.array([4,5,6]))
+        state._set_raccb(np.array([7,8,9]))
         state._set_stress(100)
         state._set_stress(101.0)
         state._set_mass(4)
         state._set_mass(4.0)
-        state._set_grad_mass(self.a_larger_array)
-        state._set_grad_mass_ld(self.a_larger_array[:-1])
+        state._set_grad_mass(np.array([.1,.1,.1,-.1,.2,.2,.2,.3,.3,.4]))
+        state._set_grad_mass_ld(np.array([-.1,.4,.3]))
         state._set_angles_ld(self.some_angles)
         state._set_angles_accb(self.other_angles)
         state._set_edge_lengths_ld(np.array([1,2,3,4,5.0,6,7]))
@@ -54,8 +54,9 @@ class StateEnvironmentalTests(unittest.TestCase):
         self.assertTrue(np.all(state.get_points_accb()      == state._points_accb))
         self.assertTrue(np.all(state.get_points_ci()        == state._points_ci))
 
-    def test_change(self):
-        """Test that the setter properly changes values."""
+
+    def test_change_ri(self):
+        """Test that the setter properly changes r, scalar values."""
         state = State()
         
         state._set_rld(np.array([1,2,3,4]))
@@ -82,6 +83,10 @@ class StateEnvironmentalTests(unittest.TestCase):
         self.assertEqual(state.get_mass(), 222)
         state._set_mass(333)
         self.assertEqual(state.get_mass(), 333)
+
+    def test_change_others(self):
+        """Test that the setter properly changes the remaining values."""
+        state = State()
         
         state._set_grad_mass(np.array([1,1,-1.2,1.1]))
         self.assertTrue(np.all(state.get_grad_mass() == np.array([1,1,-1.2,1.1])))
@@ -118,15 +123,16 @@ class StateEnvironmentalTests(unittest.TestCase):
         state._set_points_ld(np.array([[0, 1], [1.2,0], [1.1, 3]]))
         self.assertTrue(np.all(state.get_points_ld() == np.array([[0, 1], [1.2,0], [1.1, 3]])))
         
-        state._set_points_  (np.array([[0, 1], [1,0], [1, 1]]))
+        state._set_points_accb(np.array([[0, 1], [1,0], [1, 1]]))
         self.assertTrue(np.all(state.get_points_accb() == np.array([[0, 1], [1,0], [1, 1]])))
         state._set_points_accb(np.array([[0, 1], [1.2,0], [1.1, 3]]))
         self.assertTrue(np.all(state.get_points_accb() == np.array([[0, 1], [1.2,0], [1.1, 3]])))
         
-        state._set_points_  (np.array([[0, 1], [1,0], [1, 1]]))
+        state._set_points_ci(np.array([[0, 1], [1,0], [1, 1]]))
         self.assertTrue(np.all(state.get_points_ci() == np.array([[0, 1], [1,0], [1, 1]])))
         state._set_points_ci(np.array([[0, 1], [1.2,0], [1.1, 3]]))
         self.assertTrue(np.all(state.get_points_ci() == np.array([[0, 1], [1.2,0], [1.1, 3]])))
+
 
     def test_change_set_state(self):
         """Ensure that set_state properly changes state values."""
@@ -146,7 +152,7 @@ class StateEnvironmentalTests(unittest.TestCase):
                         points_ld   = np.array([[1,1],[0,0],[-1,1]]),
                         points_accb = np.array([[1,1],[0,0],[-.5,.5]]),
                         points_ci   = np.array([[1,1],[0,0],[-2,2]]))
-        self.assertTrue(np.all(state.get_rld()      == np.array([1,2,3])))
+        self.assertTrue(np.all(state.get_rld()      == np.array([1,2,3,4])))
         self.assertTrue(np.all(state.get_raccb()    == np.array([5,6])))
         self.assertTrue(np.all(state.get_ri()       == np.array([7,8,9,10,1,2,3])))
         self.assertEqual(state.get_stress(), 100)
@@ -166,7 +172,7 @@ class StateEnvironmentalTests(unittest.TestCase):
                          angles_ld      = np.array([1.1, 1.9, -1.1, 0.2]),
                          angles_accb    = np.array([1.0, 2.2, -1.1, 0.0]),
                          mass           = 200)
-        self.assertTrue(np.all(state.get_rld()      == np.array([1,2,3])))
+        self.assertTrue(np.all(state.get_rld()      == np.array([1,2,3,4])))
         self.assertTrue(np.all(state.get_raccb()    == np.array([5,6])))
         self.assertTrue(np.all(state.get_ri()       == np.array([7,8,9,10,1,2,3])))
         self.assertEqual(state.get_stress(), 60)
@@ -200,7 +206,7 @@ class StateEnvironmentalTests(unittest.TestCase):
         state._set_state(stress = 60,
                          angles_ld = np.array([1.1, 1.9, -1.1, 0.2]),
                          mass   = 200)
-        self.assertTrue(np.all(state.get_rld()      == np.array([1,2,3])))
+        self.assertTrue(np.all(state.get_rld()      == np.array([1,2,3,4])))
         self.assertTrue(np.all(state.get_raccb()    == np.array([5,6])))
         self.assertTrue(np.all(state.get_ri()       == np.array([7,8,9,10,1,2,3])))
         self.assertEqual(state.get_stress(), 60)
@@ -214,6 +220,7 @@ class StateEnvironmentalTests(unittest.TestCase):
         self.assertTrue(np.all(state.get_points_ld()    == np.array([[1,1],[0,0],[-1,1]])))
         self.assertTrue(np.all(state.get_points_accb()  == np.array([[1,1],[0,0],[-.5,.5]])))
         self.assertTrue(np.all(state.get_points_ci()    == np.array([[1,1],[0,0],[-2,2]])))
+
 
     def test_type_errors(self):
         """Ensure that setters only allow numbers/arrays"""
@@ -230,7 +237,7 @@ class StateEnvironmentalTests(unittest.TestCase):
             self.assertRaises(TypeError, f, (State(),))
         for f in [state._set_rld, state._set_raccb, state._set_ri,
                   state._set_grad_mass, state._set_grad_mass_ld,
-                  state._set_angles_ld, state.set_angles_accb,
+                  state._set_angles_ld, state._set_angles_accb,
                   state._set_edge_lengths_ld, state._set_edge_lengths_accb]:
             self.assertRaises(TypeError, f, (1234,))
             self.assertRaises(TypeError, f, (self.a_2by4_matrix,))
@@ -247,7 +254,6 @@ class StateEnvironmentalTests(unittest.TestCase):
         
         self.assertRaises(TypeError, state._set_points_ci, (1234,))
         self.assertRaises(TypeError, state._set_points_ci, (self.an_array,))
-
 
     def test_previous_size_errors(self):
         """Ensure providing arrays of different sizes throws a ValueError"""
@@ -287,36 +293,38 @@ class StateEnvironmentalTests(unittest.TestCase):
         self.assertRaises(ValueError, state._set_points_accb,   np.array([[1,1],[0,0],[-1,1],[-1,2]]))
         self.assertRaises(ValueError, state._set_points_ci,     np.array([[1,1],[0,0],[-1,1],[-1,2]]))
     
-    #def test_matching_size_errors(self):
-        """Ensure providing logically mismatching sizes throws a ValueError"""
-        # These tests were deprecated when moving from r, r_B --> ri, raccb, rld
-        """
-        # |r_B| <= |r|
-        state1 = State()
-        state1._set_r(np.array([1,2,3]))
-        self.assertRaises(ValueError, state1._set_r_B, (np.array([1,2,3,4])))
-        state2 = State()
-        state2._set_r_B(np.array([1,2,3,4]))
-        self.assertRaises(ValueError, state2._set_r, (np.array([1,2,3])))
-        
-        # |grad| == |r|
-        self.assertRaises(ValueError, state1._set_grad_mass, (np.array([1,-2])))
-        self.assertRaises(ValueError, state1._set_grad_mass, (np.array([1,-2,3,-4])))
-        
-        # todo - |grad_ld| == |r_ld|
-        # TODO - define r_ld first
-        
-        # |E| >= |V|, <= 3|V|
-        state3 = State()
-        state3._set_points(np.array([[1,1],[0,0],[-1,1]]))
-        self.assertRaises(ValueError, state3._set_edge_lengths, (np.array([1,2])))
-        self.assertRaises(ValueError, state3._set_edge_lengths, (np.array([1,2,3,4,5,6,7,8,9,10])))
-        state4 = State()
-        state4._set_edge_lengths(np.array([1,2,3,4,5,6]))
-        self.assertRaises(ValueError, state4._set_points, (np.array([[0,1]])))
-        self.assertRaises(ValueError, state4._set_points, (np.array([[0,1],[-1,1],[-2,.5],[-3,.25],[1,1],[2,.5],[3,.25]])))
-        """
-        # todo - Consider relation between sizes of E, V, angles
+    '''
+        #def test_matching_size_errors(self):
+            """Ensure providing logically mismatching sizes throws a ValueError"""
+            # These tests were deprecated when moving from r, r_B --> ri, raccb, rld
+            """
+            # |r_B| <= |r|
+            state1 = State()
+            state1._set_r(np.array([1,2,3]))
+            self.assertRaises(ValueError, state1._set_r_B, (np.array([1,2,3,4])))
+            state2 = State()
+            state2._set_r_B(np.array([1,2,3,4]))
+            self.assertRaises(ValueError, state2._set_r, (np.array([1,2,3])))
+            
+            # |grad| == |r|
+            self.assertRaises(ValueError, state1._set_grad_mass, (np.array([1,-2])))
+            self.assertRaises(ValueError, state1._set_grad_mass, (np.array([1,-2,3,-4])))
+            
+            # todo - |grad_ld| == |r_ld|
+            # TODO - define r_ld first
+            
+            # |E| >= |V|, <= 3|V|
+            state3 = State()
+            state3._set_points(np.array([[1,1],[0,0],[-1,1]]))
+            self.assertRaises(ValueError, state3._set_edge_lengths, (np.array([1,2])))
+            self.assertRaises(ValueError, state3._set_edge_lengths, (np.array([1,2,3,4,5,6,7,8,9,10])))
+            state4 = State()
+            state4._set_edge_lengths(np.array([1,2,3,4,5,6]))
+            self.assertRaises(ValueError, state4._set_points, (np.array([[0,1]])))
+            self.assertRaises(ValueError, state4._set_points, (np.array([[0,1],[-1,1],[-2,.5],[-3,.25],[1,1],[2,.5],[3,.25]])))
+            """
+            # todo - Consider relation between sizes of E, V, angles
+    '''
     
     def test_misc_value_errors(self):
         """Test other value errors. E.g. Stress, mass, y >= 0..., |point|!=2"""
@@ -324,18 +332,17 @@ class StateEnvironmentalTests(unittest.TestCase):
         # stress, mass, y >= 0
         self.assertRaises(ValueError, state._set_mass, -3)
         self.assertRaises(ValueError, state._set_stress, -10)
-        self.assertRaises(ValueError, state._set_points_ld,     np.array([[1,-1]]), True)
-        self.assertRaises(ValueError, state._set_points_accb,   np.array([[1,-1]]), True)
-        self.assertRaises(ValueError, state._set_points_ci,     np.array([[1,-1]]), True)
+        self.assertRaises(ValueError, state._set_points_ld,     np.array([[1,-1]]))
+        self.assertRaises(ValueError, state._set_points_accb,   np.array([[1,-1]]))
+        self.assertRaises(ValueError, state._set_points_ci,     np.array([[1,-1]]))
         # |point| \in points == 2
-        self.assertRaises(ValueError, state._set_points_ld,     np.array([[-1,-1,-3]]), True)
-        self.assertRaises(ValueError, state._set_points_accb,   np.array([[-1,-1,-3]]), True)
-        self.assertRaises(ValueError, state._set_points_ci,     np.array([[-1,-1,-3]]), True)
+        self.assertRaises(ValueError, state._set_points_ld,     np.array([[-1,-1,-3]]))
+        self.assertRaises(ValueError, state._set_points_accb,   np.array([[-1,-1,-3]]))
+        self.assertRaises(ValueError, state._set_points_ci,     np.array([[-1,-1,-3]]))
         # todo: Consider checking that ld, accb points are on borders, and non-overlapping
         #       for future tests using real outputs.
-        # Should raise no error with check_y = False
-        state._set_points(np.array([[1,-1]]), check_y = False)
         # todo: points are R n*2, other vectors are R n, mass and stress are numbers
+
 
 class StateInternalTests(unittest.TestCase):
     """Test all the internal state values."""
