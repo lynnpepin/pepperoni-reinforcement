@@ -1,35 +1,10 @@
+"""reinforcement_utils.py
+TODO
+"""
+
 import numpy as np
 
-
-def _check_array_and_shape(x, new_x):
-    """Check to ensure new_x is a numpy array with the same shape as x."""
-    if not isinstance(new_x, np.ndarray):
-        
-        raise TypeError(str(type(new_x)) + ": Not a numpy array.")
-    elif isinstance(x, np.ndarray):
-        # if x is an array, make sure
-        # x and new_x have matching shape.  
-        if not(x.shape == new_x.shape):
-            raise ValueError("Shape mismatch setting new value.")
-
-
-def _check_number_and_geqzero(x):
-    """Ensure x is a nubmer >= 0."""
-    if not isinstance(x, (int, float)):
-        raise TypeError("Not a number!")
-    elif not (x > 0):
-        raise ValueError("Not greater than zero!")
-
-
-def _check_points(points):
-    """Check that np array points is of shape (*2) and of proper values"""
-    if points.shape[1] != 2:
-        raise ValueError("Points must be in the real plane! (Set points of shape (n,2))")    
-    for point in points:
-        if point[1] < 0:
-            raise ValueError("Points y must be greater than 0!")
-
-def _state_from_update(update_data, state = None):
+def state_from_update(data, state = None):
     """Focal point from circlepacking/FEM code to RL side.
     
     Expected to be updated possibly often as the spec for update(rld_new) changes.
@@ -47,7 +22,6 @@ def _state_from_update(update_data, state = None):
             'ri'            : List of float; radii of interior circles.
                             # rld not provided, since that is the input to
                             # update(). The agent should know it itself.
-            'rb'            : List of float, presumably rcb.
             'sigma'         : Float, representing stress,
             'mass'          : Float, mass of the bridge after update.
             'gmass_r'       : List of float; gradient w.r.t. r of mass,
@@ -70,12 +44,21 @@ def _state_from_update(update_data, state = None):
                     'positions_ci'      : Positions of the interior points
                 }
         }
-
-    
-    # Returns instance of State()
     """
-    raise NotImplementedError
-
+    return State(raccb              = data['raccb'],
+                 ri                 = data['ri'],
+                 stress             = data['sigma'],
+                 mass               = data['mass'],
+                 grad_mass          = data['gmass_r'],
+                 grad_mass_ld       = data['gmass_rld'],
+                 edge_lengths_ld    = data['geometry_info']['edges_ld'],
+                 edge_lengths_accb  = data['geometry_info']['edges_accb'],
+                 angles_ld          = data['geometry_info']['angles_ld'],
+                 angles_accb        = data['geometry_info']['angles_accb'],
+                 points_ld          = data['geometry_info']['positions_ld'],
+                 points_accb        = data['geometry_info']['positions_accb'],
+                 points_ci          = data['geometry_info']['positions_ci'])
+    # NOTE: rld is not defined!
 
 class StatePreprocessor:
     """Class which stores important meta-variables about the state,
@@ -99,7 +82,6 @@ class StatePreprocessor:
     """
     def __init__(self):
         raise NotImplementedError
-
 
 def _preprocess(l=2.0, w=3.0, max_mass=6.0, allowable_stress=1.0, state=None):
     """Standalone backbone of StatePreprocessor.
@@ -321,7 +303,6 @@ class State:
         _check_points(points_ci)
         self._points_ci = points_ci
 
-
     
     def _set_state(self, rld                = None,
                          raccb              = None,
@@ -380,3 +361,33 @@ class State:
             self._points_ci = points_ci
 
         return self
+
+# Misc functions used in State()
+def _check_array_and_shape(x, new_x):
+    """Check to ensure new_x is a numpy array with the same shape as x."""
+    if not isinstance(new_x, np.ndarray):
+        
+        raise TypeError(str(type(new_x)) + ": Not a numpy array.")
+    elif isinstance(x, np.ndarray):
+        # if x is an array, make sure
+        # x and new_x have matching shape.  
+        if not(x.shape == new_x.shape):
+            raise ValueError("Shape mismatch setting new value.")
+
+
+def _check_number_and_geqzero(x):
+    """Ensure x is a nubmer >= 0."""
+    if not isinstance(x, (int, float)):
+        raise TypeError("Not a number!")
+    elif not (x > 0):
+        raise ValueError("Not greater than zero!")
+
+
+def _check_points(points):
+    """Check that np array points is of shape (*2) and of proper values"""
+    if points.shape[1] != 2:
+        raise ValueError("Points must be in the real plane! (Set points of shape (n,2))")    
+    for point in points:
+        if point[1] < 0:
+            raise ValueError("Points y must be greater than 0!")
+
