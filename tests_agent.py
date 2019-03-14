@@ -10,9 +10,10 @@ from reinforcement_utils import State, state_from_update, _preprocess, _normaliz
 from agent import BasicAgent
 from example_update_data import example_update_1
 
-class BasicAgentTests(unittest.TestCase):
-    """Test all the environmental/external values for the state,
-    i.e. wholly ignoring any agent-internal state values."""
+class BasicAgent_Superficial_Tests(unittest.TestCase):
+    """Check that the BasicAgent has methods that can be called, that setters
+    and getters perform their functions properly, and do 'type-checking'.
+    Does not check behavior (e.g. that rld does not violate boundaries)."""
     def setUp(self):
         pass
 
