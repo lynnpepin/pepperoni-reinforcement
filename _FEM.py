@@ -21,7 +21,7 @@ def _ccw(ax, ay, bx, by, cx, cy):
         return False
 
 
-def _membershiptest(px, py, Edges):
+def _membershiptest(px, py, Edges,nely,nelx):
     size_edges = np.size(Edges, axis=0)
     number_edges = size_edges
     crossNumber = 0
@@ -34,10 +34,10 @@ def _membershiptest(px, py, Edges):
 
     for i in range(0, number_edges):
         if Edges[i][0] == 1:
-            cx = Edges[i][1]
-            cy = Edges[i][2]
-            dx = Edges[i][3]
-            dy = Edges[i][4]
+            cx =0.05*nelx* Edges[i][1]
+            cy = 0.1*nely*Edges[i][2]
+            dx =0.05*nelx* Edges[i][3]
+            dy =0.1*nely* Edges[i][4]
             if (_ccw(ax, ay, bx, by, cx, cy) != _ccw(ax, ay, bx, by, dx, dy)) & (_ccw(cx, cy, dx, dy, ax, ay) != _ccw(cx, cy, dx, dy, bx, by)):
                 crossNumber = crossNumber+1
     if np.mod(crossNumber, 2) == 1:
@@ -49,14 +49,14 @@ def _membershiptest(px, py, Edges):
 def _FEM(Edges,nely,nelx):
     E0 = 2e7
     nu = 0.3
-    fmag = 20
+    fmag = 10000/nelx
     #Edges, r_ld, r = generate_boundary_edges()
     x = np.ones([nely, nelx])
     e = []
 
     for elx in range(0, nelx):
         for ely in range(0, nely):
-            if _membershiptest((elx), (nely-ely), Edges) == True:
+            if _membershiptest((elx), (nely-ely), Edges,nely,nelx) == True:
                 x[ely][elx] = 0
                 e.append(elx*nely + ely+1)
 
@@ -187,12 +187,13 @@ def _FEM(Edges,nely,nelx):
     U = c[0]
     d = np.zeros([8, 1])
     sigma = np.zeros([np.size(edofMat, axis=0), 2])
-
+    A = 4000/(nelx*nely)
+    t = 5;
     for i in range(0, np.size(edofMat, axis=0)):
         for j in range(0, 8):
             d[j][0] = U[np.int(edofMat[i][j])-1]
 
-        sigma[i] = np.reshape(E0/(5*(1-np.power(nu, 2))) * np.dot([[1, nu], [nu, 1]], np.dot(
+        sigma[i] = np.reshape(E0/(2*t*A*(1-np.power(nu, 2))) * np.dot([[1, nu], [nu, 1]], np.dot(
             [[-1, 0, -1, 0, 1, 0, -1, 0], [0, -1, 0, -1, 0, 1, 0, 1]], d)), (1, 2))
     sigma = abs(sigma)
     maxsigma = np.max(sigma)
