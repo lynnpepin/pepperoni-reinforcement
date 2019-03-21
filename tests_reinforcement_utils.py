@@ -6,10 +6,10 @@ Unit tests for reinforcement_utils.py.
 import unittest
 import numpy as np
 from random import random
-from reinforcement_utils import State, state_from_update, _preprocess, _normalize_01, _normalize_angle
+from reinforcement_utils import BridgeState, state_from_update, preprocess_state, _normalize_01, _normalize_angle
 from example_update_data import example_update_1
 
-class StateEnvironmentalTests(unittest.TestCase):
+class BridgeStateEnvironmentalTests(unittest.TestCase):
     """Test all the environmental/external values for the state,
     i.e. wholly ignoring any agent-internal state values."""
     def setUp(self):
@@ -28,23 +28,23 @@ class StateEnvironmentalTests(unittest.TestCase):
         
     def test_call(self):
         """Test that we can call each setter, getter, and init."""
-        state = State()
-        state._set_ri(np.array([0,1,2,3]))
-        state._set_rld(np.array([4,5,6]))
-        state._set_raccb(np.array([7,8,9]))
-        state._set_stress(100)
-        state._set_stress(101.0)
-        state._set_mass(4)
-        state._set_mass(4.0)
-        state._set_grad_mass(np.array([.1,.1,.1,-.1,.2,.2,.2,.3,.3,.4]))
-        state._set_grad_mass_ld(np.array([-.1,.4,.3]))
-        state._set_angles_ld(self.some_angles)
-        state._set_angles_accb(self.other_angles)
-        state._set_edge_lengths_ld(np.array([1,2,3,4,5.0,6,7]))
-        state._set_edge_lengths_accb(np.array([1,2.0,6,7]))
-        state._set_points_ld(self.a_2by4_matrix)
-        state._set_points_accb(self.another_matrix)
-        state._set_points_ci(self.another_matrix)
+        state = BridgeState()
+        state.set_ri(np.array([0,1,2,3]))
+        state.set_rld(np.array([4,5,6]))
+        state.set_raccb(np.array([7,8,9]))
+        state.set_stress(100)
+        state.set_stress(101.0)
+        state.set_mass(4)
+        state.set_mass(4.0)
+        state.set_grad_mass(np.array([.1,.1,.1,-.1,.2,.2,.2,.3,.3,.4]))
+        state.set_grad_mass_ld(np.array([-.1,.4,.3]))
+        state.set_angles_ld(self.some_angles)
+        state.set_angles_accb(self.other_angles)
+        state.set_edge_lengths_ld(np.array([1,2,3,4,5.0,6,7]))
+        state.set_edge_lengths_accb(np.array([1,2.0,6,7]))
+        state.set_points_ld(self.a_2by4_matrix)
+        state.set_points_accb(self.another_matrix)
+        state.set_points_ci(self.another_matrix)
         
         self.assertTrue(np.all(state.get_rld()          == state._rld))
         self.assertTrue(np.all(state.get_raccb()        == state._raccb))
@@ -64,88 +64,88 @@ class StateEnvironmentalTests(unittest.TestCase):
 
     def test_change_ri(self):
         """Test that the setter properly changes r, scalar values."""
-        state = State()
+        state = BridgeState()
         
-        state._set_rld(np.array([1,2,3,4]))
+        state.set_rld(np.array([1,2,3,4]))
         self.assertTrue(np.all(state.get_rld() == np.array([1,2,3,4])))
-        state._set_rld(np.array([100,2,3,10]))
+        state.set_rld(np.array([100,2,3,10]))
         self.assertTrue(np.all(state.get_rld() == np.array([100,2,3,10])))
         
-        state._set_raccb(np.array([1,2,3,4]))
+        state.set_raccb(np.array([1,2,3,4]))
         self.assertTrue(np.all(state.get_raccb() == np.array([1,2,3,4])))
-        state._set_raccb(np.array([100,2,3,10]))
+        state.set_raccb(np.array([100,2,3,10]))
         self.assertTrue(np.all(state.get_raccb() == np.array([100,2,3,10])))
         
-        state._set_ri(np.array([1,2,3,4]))
+        state.set_ri(np.array([1,2,3,4]))
         self.assertTrue(np.all(state.get_ri() == np.array([1,2,3,4])))
-        state._set_ri(np.array([100,2,3,10]))
+        state.set_ri(np.array([100,2,3,10]))
         self.assertTrue(np.all(state.get_ri() == np.array([100,2,3,10])))
         
-        state._set_stress(123.4)
+        state.set_stress(123.4)
         self.assertEqual(state.get_stress(), 123.4)
-        state._set_stress(213)
+        state.set_stress(213)
         self.assertEqual(state.get_stress(), 213)
         
-        state._set_mass(222)
+        state.set_mass(222)
         self.assertEqual(state.get_mass(), 222)
-        state._set_mass(333)
+        state.set_mass(333)
         self.assertEqual(state.get_mass(), 333)
 
     def test_change_others(self):
         """Test that the setter properly changes the remaining values."""
-        state = State()
+        state = BridgeState()
         
-        state._set_grad_mass(np.array([1,1,-1.2,1.1]))
+        state.set_grad_mass(np.array([1,1,-1.2,1.1]))
         self.assertTrue(np.all(state.get_grad_mass() == np.array([1,1,-1.2,1.1])))
-        state._set_grad_mass(np.array([2, 3.1, 4,1.1]))
+        state.set_grad_mass(np.array([2, 3.1, 4,1.1]))
         self.assertTrue(np.all(state.get_grad_mass() == np.array([2, 3.1, 4,1.1])))
         
-        state._set_grad_mass_ld(np.array([1,1,-1.2,1.1]))
+        state.set_grad_mass_ld(np.array([1,1,-1.2,1.1]))
         self.assertTrue(np.all(state.get_grad_mass_ld() == np.array([1,1,-1.2,1.1])))
-        state._set_grad_mass_ld(np.array([2, 3.1, 4,1.1]))
+        state.set_grad_mass_ld(np.array([2, 3.1, 4,1.1]))
         self.assertTrue(np.all(state.get_grad_mass_ld() == np.array([2, 3.1, 4,1.1])))
         
-        state._set_angles_ld(np.array([3.2, 3.1, 3.3]))
+        state.set_angles_ld(np.array([3.2, 3.1, 3.3]))
         self.assertTrue(np.all(state.get_angles_ld() == np.array([3.2, 3.1, 3.3])))
-        state._set_angles_ld(np.array([3.2, 3.0, 3.3]))
+        state.set_angles_ld(np.array([3.2, 3.0, 3.3]))
         self.assertTrue(np.all(state.get_angles_ld() == np.array([3.2, 3.0, 3.3])))
         
-        state._set_angles_accb(np.array([3.0, 3.1, 3.3]))
+        state.set_angles_accb(np.array([3.0, 3.1, 3.3]))
         self.assertTrue(np.all(state.get_angles_accb() == np.array([3.0, 3.1, 3.3])))
-        state._set_angles_accb(np.array([3.2, 3.0, 3.9]))
+        state.set_angles_accb(np.array([3.2, 3.0, 3.9]))
         self.assertTrue(np.all(state.get_angles_accb() == np.array([3.2, 3.0, 3.9])))
         
-        state._set_edge_lengths_ld(np.array([1.0, 1.2, .3]))
+        state.set_edge_lengths_ld(np.array([1.0, 1.2, .3]))
         self.assertTrue(np.all(state.get_edge_lengths_ld() == np.array([1.0, 1.2, .3])))
-        state._set_edge_lengths_ld(np.array([1, 1, 1]))
+        state.set_edge_lengths_ld(np.array([1, 1, 1]))
         self.assertTrue(np.all(state.get_edge_lengths_ld() == np.array([1, 1, 1])))
         
-        state._set_edge_lengths_accb(np.array([4.0, 3.3, .3]))
+        state.set_edge_lengths_accb(np.array([4.0, 3.3, .3]))
         self.assertTrue(np.all(state.get_edge_lengths_accb() == np.array([4.0, 3.3, .3])))
-        state._set_edge_lengths_accb(np.array([4, 4, 4]))
+        state.set_edge_lengths_accb(np.array([4, 4, 4]))
         self.assertTrue(np.all(state.get_edge_lengths_accb() == np.array([4, 4, 4])))
         
-        state._set_points_ld(np.array([[0, 1], [1,0], [1, 1]]))
+        state.set_points_ld(np.array([[0, 1], [1,0], [1, 1]]))
         self.assertTrue(np.all(state.get_points_ld() == np.array([[0, 1], [1,0], [1, 1]])))
-        state._set_points_ld(np.array([[0, 1], [1.2,0], [1.1, 3]]))
+        state.set_points_ld(np.array([[0, 1], [1.2,0], [1.1, 3]]))
         self.assertTrue(np.all(state.get_points_ld() == np.array([[0, 1], [1.2,0], [1.1, 3]])))
         
-        state._set_points_accb(np.array([[0, 1], [1,0], [1, 1]]))
+        state.set_points_accb(np.array([[0, 1], [1,0], [1, 1]]))
         self.assertTrue(np.all(state.get_points_accb() == np.array([[0, 1], [1,0], [1, 1]])))
-        state._set_points_accb(np.array([[0, 1], [1.2,0], [1.1, 3]]))
+        state.set_points_accb(np.array([[0, 1], [1.2,0], [1.1, 3]]))
         self.assertTrue(np.all(state.get_points_accb() == np.array([[0, 1], [1.2,0], [1.1, 3]])))
         
-        state._set_points_ci(np.array([[0, 1], [1,0], [1, 1]]))
+        state.set_points_ci(np.array([[0, 1], [1,0], [1, 1]]))
         self.assertTrue(np.all(state.get_points_ci() == np.array([[0, 1], [1,0], [1, 1]])))
-        state._set_points_ci(np.array([[0, 1], [1.2,0], [1.1, 3]]))
+        state.set_points_ci(np.array([[0, 1], [1.2,0], [1.1, 3]]))
         self.assertTrue(np.all(state.get_points_ci() == np.array([[0, 1], [1.2,0], [1.1, 3]])))
 
 
     def test_change_set_state(self):
         """Ensure that set_state properly changes state values."""
-        state = State()
+        state = BridgeState()
         # 1. Init
-        state._set_state(rld        = np.array([1,2,3,4]),
+        state.set_state(rld        = np.array([1,2,3,4]),
                         raccb       = np.array([5,6]),
                         ri          = np.array([7,8,9,10,1,2,3]),
                         stress      = 100,
@@ -175,7 +175,7 @@ class StateEnvironmentalTests(unittest.TestCase):
         self.assertTrue(np.all(state.get_points_ci()    == np.array([[1,1],[0,0],[-2,2]])))
         # 2. Then change some values.
         # (Redo this, running init)
-        state._set_state(stress         = 60,
+        state.set_state(stress         = 60,
                          angles_ld      = np.array([1.1, 1.9, -1.1, 0.2]),
                          angles_accb    = np.array([1.0, 2.2, -1.1, 0.0]),
                          mass           = 200)
@@ -196,7 +196,7 @@ class StateEnvironmentalTests(unittest.TestCase):
 
     def test_init(self):
         """Ensure init works, and that set_state still works afterwards."""
-        state = State(rld         = np.array([1,2,3,4]),
+        state = BridgeState(rld         = np.array([1,2,3,4]),
                       raccb       = np.array([5,6]),
                       ri          = np.array([7,8,9,10,1,2,3]),
                       stress      = 100,
@@ -210,7 +210,7 @@ class StateEnvironmentalTests(unittest.TestCase):
                       points_ld   = np.array([[1,1],[0,0],[-1,1]]),
                       points_accb = np.array([[1,1],[0,0],[-.5,.5]]),
                       points_ci   = np.array([[1,1],[0,0],[-2,2]]))
-        state._set_state(stress = 60,
+        state.set_state(stress = 60,
                          angles_ld = np.array([1.1, 1.9, -1.1, 0.2]),
                          mass   = 200)
         self.assertTrue(np.all(state.get_rld()      == np.array([1,2,3,4])))
@@ -232,39 +232,39 @@ class StateEnvironmentalTests(unittest.TestCase):
     def test_type_errors(self):
         """Ensure that setters only allow numbers/arrays"""
         # Check: String,  None, and state (float, array, matrix),
-        state = State()
-        for f in [state._set_rld, state._set_raccb, state._set_ri,
-                  state._set_grad_mass, state._set_grad_mass_ld,
-                  state._set_stress, state._set_mass,
-                  state._set_angles_ld, state._set_angles_accb,
-                  state._set_edge_lengths_ld, state._set_edge_lengths_accb,
-                  state._set_points_ld, state._set_points_accb, state._set_points_ci]:
+        state = BridgeState()
+        for f in [state.set_rld, state.set_raccb, state.set_ri,
+                  state.set_grad_mass, state.set_grad_mass_ld,
+                  state.set_stress, state.set_mass,
+                  state.set_angles_ld, state.set_angles_accb,
+                  state.set_edge_lengths_ld, state.set_edge_lengths_accb,
+                  state.set_points_ld, state.set_points_accb, state.set_points_ci]:
             self.assertRaises(TypeError, f, "Some String!")
             self.assertRaises(TypeError, f, None)
-            self.assertRaises(TypeError, f, State())
-        for f in [state._set_rld, state._set_raccb, state._set_ri,
-                  state._set_grad_mass, state._set_grad_mass_ld,
-                  state._set_angles_ld, state._set_angles_accb,
-                  state._set_edge_lengths_ld, state._set_edge_lengths_accb]:
+            self.assertRaises(TypeError, f, BridgeState())
+        for f in [state.set_rld, state.set_raccb, state.set_ri,
+                  state.set_grad_mass, state.set_grad_mass_ld,
+                  state.set_angles_ld, state.set_angles_accb,
+                  state.set_edge_lengths_ld, state.set_edge_lengths_accb]:
             self.assertRaises(TypeError, f, 1234)
             self.assertRaises(TypeError, f, np.array([[2,1,3],[4,1,2.1]]))
             
-        for f in [state._set_stress, state._set_mass]:
+        for f in [state.set_stress, state.set_mass]:
             self.assertRaises(TypeError, f, (self.an_array,))
             self.assertRaises(TypeError, f, (self.a_2by4_matrix,))
         
-        self.assertRaises(TypeError, state._set_points_ld, (1234,))
-        self.assertRaises(TypeError, state._set_points_ld, (self.an_array,))
+        self.assertRaises(TypeError, state.set_points_ld, (1234,))
+        self.assertRaises(TypeError, state.set_points_ld, (self.an_array,))
         
-        self.assertRaises(TypeError, state._set_points_accb, (1234,))
-        self.assertRaises(TypeError, state._set_points_accb, (self.an_array,))
+        self.assertRaises(TypeError, state.set_points_accb, (1234,))
+        self.assertRaises(TypeError, state.set_points_accb, (self.an_array,))
         
-        self.assertRaises(TypeError, state._set_points_ci, (1234,))
-        self.assertRaises(TypeError, state._set_points_ci, (self.an_array,))
+        self.assertRaises(TypeError, state.set_points_ci, (1234,))
+        self.assertRaises(TypeError, state.set_points_ci, (self.an_array,))
 
     def test_previous_size_errors(self):
         """Ensure providing arrays of different sizes throws a ValueError"""
-        state = State(rld         = np.array([1,2,3,4]),
+        state = BridgeState(rld         = np.array([1,2,3,4]),
                       raccb       = np.array([5,6]),
                       ri          = np.array([7,8,9,10,1,2,3]),
                       stress      = 100,
@@ -278,31 +278,31 @@ class StateEnvironmentalTests(unittest.TestCase):
                       points_ld   = np.array([[1,1],[0,0],[-1,1]]),
                       points_accb = np.array([[1,1],[0,0],[-.5,.5]]),
                       points_ci   = np.array([[1,1],[0,0],[-2,2]]))
-        self.assertRaises(ValueError, state._set_rld,   (np.array([1,2,3,3,4])))
-        self.assertRaises(ValueError, state._set_rld,   (np.array([1,2,3,3,4])))
-        self.assertRaises(ValueError, state._set_rld,   (np.array([[1,2]])))
-        self.assertRaises(ValueError, state._set_rld,   (np.array([[1,2]])))
-        self.assertRaises(ValueError, state._set_raccb, (np.array([1,2,3,3,4])))
-        self.assertRaises(ValueError, state._set_raccb, (np.array([1,2,3,3,4])))
-        self.assertRaises(ValueError, state._set_raccb, (np.array([[1,2,3]])))
-        self.assertRaises(ValueError, state._set_raccb, (np.array([[1,2,3]])))
-        self.assertRaises(ValueError, state._set_ri,    (np.array([1,2,3,3,4,2,2,2,2,2])))
-        self.assertRaises(ValueError, state._set_ri,    (np.array([1,2,3,3,4,2,2,2,2,2])))
-        self.assertRaises(ValueError, state._set_ri,    (np.array([[1,2]])))
-        self.assertRaises(ValueError, state._set_ri,    (np.array([[1,2]])))
-        self.assertRaises(ValueError, state._set_grad_mass,     np.array([3,2,0]))
-        self.assertRaises(ValueError, state._set_grad_mass,     np.array([3,2,0]))
-        self.assertRaises(ValueError, state._set_grad_mass_ld,  np.array([3,2,0]))
-        self.assertRaises(ValueError, state._set_grad_mass_ld,  np.array([3,2,0]))
-        self.assertRaises(ValueError, state._set_angles_ld,     np.array([1.0, 2.0, -1.0, 0.0, 1.1]))
-        self.assertRaises(ValueError, state._set_angles_ld,     np.array([1.0, 2.0, -1.0, 0.0, 1.1]))
-        self.assertRaises(ValueError, state._set_angles_accb,   np.array([1.0, 2.0, -1.0,]))
-        self.assertRaises(ValueError, state._set_angles_accb,   np.array([1.0, 2.0, -1.0,]))
-        self.assertRaises(ValueError, state._set_edge_lengths_ld,   np.array([2,3,2,3,1]))
-        self.assertRaises(ValueError, state._set_edge_lengths_accb, np.array([2,3,2,3,1]))
-        self.assertRaises(ValueError, state._set_points_ld,     np.array([[1,1],[0,0],[-1,1],[-1,2]]))
-        self.assertRaises(ValueError, state._set_points_accb,   np.array([[1,1],[0,0],[-1,1],[-1,2]]))
-        self.assertRaises(ValueError, state._set_points_ci,     np.array([[1,1],[0,0],[-1,1],[-1,2]]))
+        self.assertRaises(ValueError, state.set_rld,   (np.array([1,2,3,3,4])))
+        self.assertRaises(ValueError, state.set_rld,   (np.array([1,2,3,3,4])))
+        self.assertRaises(ValueError, state.set_rld,   (np.array([[1,2]])))
+        self.assertRaises(ValueError, state.set_rld,   (np.array([[1,2]])))
+        self.assertRaises(ValueError, state.set_raccb, (np.array([1,2,3,3,4])))
+        self.assertRaises(ValueError, state.set_raccb, (np.array([1,2,3,3,4])))
+        self.assertRaises(ValueError, state.set_raccb, (np.array([[1,2,3]])))
+        self.assertRaises(ValueError, state.set_raccb, (np.array([[1,2,3]])))
+        self.assertRaises(ValueError, state.set_ri,    (np.array([1,2,3,3,4,2,2,2,2,2])))
+        self.assertRaises(ValueError, state.set_ri,    (np.array([1,2,3,3,4,2,2,2,2,2])))
+        self.assertRaises(ValueError, state.set_ri,    (np.array([[1,2]])))
+        self.assertRaises(ValueError, state.set_ri,    (np.array([[1,2]])))
+        self.assertRaises(ValueError, state.set_grad_mass,     np.array([3,2,0]))
+        self.assertRaises(ValueError, state.set_grad_mass,     np.array([3,2,0]))
+        self.assertRaises(ValueError, state.set_grad_mass_ld,  np.array([3,2,0]))
+        self.assertRaises(ValueError, state.set_grad_mass_ld,  np.array([3,2,0]))
+        self.assertRaises(ValueError, state.set_angles_ld,     np.array([1.0, 2.0, -1.0, 0.0, 1.1]))
+        self.assertRaises(ValueError, state.set_angles_ld,     np.array([1.0, 2.0, -1.0, 0.0, 1.1]))
+        self.assertRaises(ValueError, state.set_angles_accb,   np.array([1.0, 2.0, -1.0,]))
+        self.assertRaises(ValueError, state.set_angles_accb,   np.array([1.0, 2.0, -1.0,]))
+        self.assertRaises(ValueError, state.set_edge_lengths_ld,   np.array([2,3,2,3,1]))
+        self.assertRaises(ValueError, state.set_edge_lengths_accb, np.array([2,3,2,3,1]))
+        self.assertRaises(ValueError, state.set_points_ld,     np.array([[1,1],[0,0],[-1,1],[-1,2]]))
+        self.assertRaises(ValueError, state.set_points_accb,   np.array([[1,1],[0,0],[-1,1],[-1,2]]))
+        self.assertRaises(ValueError, state.set_points_ci,     np.array([[1,1],[0,0],[-1,1],[-1,2]]))
     
     '''
         #def test_matching_size_errors(self):
@@ -310,52 +310,52 @@ class StateEnvironmentalTests(unittest.TestCase):
             # These tests were deprecated when moving from r, r_B --> ri, raccb, rld
             """
             # |r_B| <= |r|
-            state1 = State()
-            state1._set_r(np.array([1,2,3]))
-            self.assertRaises(ValueError, state1._set_r_B, (np.array([1,2,3,4])))
-            state2 = State()
-            state2._set_r_B(np.array([1,2,3,4]))
-            self.assertRaises(ValueError, state2._set_r, (np.array([1,2,3])))
+            state1 = BridgeState()
+            state1.set_r(np.array([1,2,3]))
+            self.assertRaises(ValueError, state1.set_r_B, (np.array([1,2,3,4])))
+            state2 = BridgeState()
+            state2.set_r_B(np.array([1,2,3,4]))
+            self.assertRaises(ValueError, state2.set_r, (np.array([1,2,3])))
             
             # |grad| == |r|
-            self.assertRaises(ValueError, state1._set_grad_mass, (np.array([1,-2])))
-            self.assertRaises(ValueError, state1._set_grad_mass, (np.array([1,-2,3,-4])))
+            self.assertRaises(ValueError, state1.set_grad_mass, (np.array([1,-2])))
+            self.assertRaises(ValueError, state1.set_grad_mass, (np.array([1,-2,3,-4])))
             
             # todo - |grad_ld| == |r_ld|
             # TODO - define r_ld first
             
             # |E| >= |V|, <= 3|V|
-            state3 = State()
-            state3._set_points(np.array([[1,1],[0,0],[-1,1]]))
-            self.assertRaises(ValueError, state3._set_edge_lengths, (np.array([1,2])))
-            self.assertRaises(ValueError, state3._set_edge_lengths, (np.array([1,2,3,4,5,6,7,8,9,10])))
-            state4 = State()
-            state4._set_edge_lengths(np.array([1,2,3,4,5,6]))
-            self.assertRaises(ValueError, state4._set_points, (np.array([[0,1]])))
-            self.assertRaises(ValueError, state4._set_points, (np.array([[0,1],[-1,1],[-2,.5],[-3,.25],[1,1],[2,.5],[3,.25]])))
+            state3 = BridgeState()
+            state3.set_points(np.array([[1,1],[0,0],[-1,1]]))
+            self.assertRaises(ValueError, state3.set_edge_lengths, (np.array([1,2])))
+            self.assertRaises(ValueError, state3.set_edge_lengths, (np.array([1,2,3,4,5,6,7,8,9,10])))
+            state4 = BridgeState()
+            state4.set_edge_lengths(np.array([1,2,3,4,5,6]))
+            self.assertRaises(ValueError, state4.set_points, (np.array([[0,1]])))
+            self.assertRaises(ValueError, state4.set_points, (np.array([[0,1],[-1,1],[-2,.5],[-3,.25],[1,1],[2,.5],[3,.25]])))
             """
             # todo - Consider relation between sizes of E, V, angles
     '''
     
     def test_misc_value_errors(self):
         """Test other value errors. E.g. Stress, mass, y >= 0..., |point|!=2"""
-        state = State()
+        state = BridgeState()
         # stress, mass, y >= 0
-        self.assertRaises(ValueError, state._set_mass, -3)
-        self.assertRaises(ValueError, state._set_stress, -10)
-        self.assertRaises(ValueError, state._set_points_ld,     np.array([[1,-1]]))
-        self.assertRaises(ValueError, state._set_points_accb,   np.array([[1,-1]]))
-        self.assertRaises(ValueError, state._set_points_ci,     np.array([[1,-1]]))
+        self.assertRaises(ValueError, state.set_mass, -3)
+        self.assertRaises(ValueError, state.set_stress, -10)
+        self.assertRaises(ValueError, state.set_points_ld,     np.array([[1,-1]]))
+        self.assertRaises(ValueError, state.set_points_accb,   np.array([[1,-1]]))
+        self.assertRaises(ValueError, state.set_points_ci,     np.array([[1,-1]]))
         # |point| \in points == 2
-        self.assertRaises(ValueError, state._set_points_ld,     np.array([[-1,-1,-3]]))
-        self.assertRaises(ValueError, state._set_points_accb,   np.array([[-1,-1,-3]]))
-        self.assertRaises(ValueError, state._set_points_ci,     np.array([[-1,-1,-3]]))
+        self.assertRaises(ValueError, state.set_points_ld,     np.array([[-1,-1,-3]]))
+        self.assertRaises(ValueError, state.set_points_accb,   np.array([[-1,-1,-3]]))
+        self.assertRaises(ValueError, state.set_points_ci,     np.array([[-1,-1,-3]]))
         # todo: Consider checking that ld, accb points are on borders, and non-overlapping
         #       for future tests using real outputs.
         # todo: points are R n*2, other vectors are R n, mass and stress are numbers
 
 
-class StateInternalTests(unittest.TestCase):
+class BridgeStateInternalTests(unittest.TestCase):
     """Test all the internal state values."""
     def setUp(self):
         pass
@@ -366,7 +366,7 @@ class StateInternalTests(unittest.TestCase):
     def test_example(self):
         pass
 
-class StateFromUpdateTest(unittest.TestCase):
+class BridgeStateFromUpdateTest(unittest.TestCase):
     """Test the _state_from_update(update(rld)) helper function."""
     
     # Test in progress...
@@ -416,7 +416,7 @@ class StateFromUpdateTest(unittest.TestCase):
 
 class PreprocessTest(unittest.TestCase):
     """Ensure preprocess functions work as expected."""
-    # _preprocess(l=20.0, w=10.0, max_mass=400.0, allowable_stress=200.0, state=None):
+    # preprocess_state(l=20.0, w=10.0, max_mass=400.0, allowable_stress=200.0, state=None):
     # x, y, edge_lengths --> x/(sqrt(l**2+h**2))
     # angles --> (sin(x), cos(x))
     # gmass, gmass_r unmodified
@@ -488,10 +488,10 @@ class PreprocessTest(unittest.TestCase):
                       [[0,-1], [0,-1], [-1,0]]])
         np.testing.assert_array_almost_equal(x,y)
     
-    def test_preprocess_example_1_sanitycheck(self):
-        """Make sure _preprocess runs and produces a vector of shape (*,)"""
+    def test_preprocess_state_example_1_sanitycheck(self):
+        """Make sure preprocess_state runs and produces a vector of shape (*,)"""
         state = state_from_update(example_update_1)
-        vec   = _preprocess(state, l = 20, w = 10, max_mass = 400, allowable_stress = 200)
+        vec   = preprocess_state(state, l = 20, w = 10, max_mass = 400, allowable_stress = 200)
         # vec.shape should be of shape (n,)
         self.assertEqual(len(vec.shape), 1)
         # todo; more?
@@ -499,10 +499,10 @@ class PreprocessTest(unittest.TestCase):
         # todo: Check that, without a given key value, the preproccessor
         #       does not add it to the stack. E.g. what if ri is None
 
-# class StatePreprocessorTest(unittest.TestCase)
+# class BridgeStatePreprocessorTest(unittest.TestCase)
 
-TestCases = [StateEnvironmentalTests,
-             StateFromUpdateTest,
+TestCases = [BridgeStateEnvironmentalTests,
+             BridgeStateFromUpdateTest,
              PreprocessTest]
 
 def run_tests(TestCaseList):

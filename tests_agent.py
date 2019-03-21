@@ -23,7 +23,7 @@ class BasicAgent_Superficial_Tests(unittest.TestCase):
     def test_(self):
         raise NotImplementedError
 
-TestCases = [BasicAgentTests]
+TestCases = [BasicAgent_Superficial_Tests]
 
 
 def run_tests(TestCaseList):

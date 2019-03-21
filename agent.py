@@ -51,5 +51,3 @@ class BasicAgent:
         2. A dumb, hard-coded agent that explores per simplex.
         3. A dumb, hard-coded agent that explores per GD.
     """
-
-e
