@@ -7,6 +7,10 @@ class BasicAgent:
         raise NotImplementedError
     
     """A bare-bones agent, providing the structure for smarter agents.
+    
+    ex. my_agent = BasicAgent(state = initial_state,
+                               environment = my_bridge,
+                               preprocess = reinforcement_utils._preprocess,)
 
     # Init Arguments
         # Attribute arguments:
@@ -14,19 +18,20 @@ class BasicAgent:
                 Provides the initial state of the bridge.
             rld:  Instance of numpy.ndarray. Optional.
                 Leading dancers radii in the circle packing.
-                Overrides state._rld is provided.
+                Overrides state._rld if provided.
             environment:  Instance of BHD, providing update().
                 Update maps rld to a dictionary, representing bridge state.
             preprocess:  Function : State() --> numpy.ndarray
                 Preprocesses a bridge state for a neural network. 
-            policy:  Function : numpy.ndarray --> numpy.ndarray
-                Maps preprocessed state array to a new choice of rld.
+           
                         
     # Attributes    
-        # Attribute arumgents
+        # Attribute arumgents as above, plus...
         # Other attributes:
             _raw_update:  Instance of dict
                 The unprocessed dictionary provided by environment.update()
+            policy:  Function : numpy.ndarray --> numpy.ndarray
+                Maps preprocessed state array to a new choice of rld.
             
     # Methods
         Getters and setters for each attribute.
@@ -47,4 +52,4 @@ class BasicAgent:
         3. A dumb, hard-coded agent that explores per GD.
     """
 
-
+e
