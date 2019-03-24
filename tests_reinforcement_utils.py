@@ -6,7 +6,7 @@ Unit tests for reinforcement_utils.py.
 import unittest
 import numpy as np
 from random import random
-from reinforcement_utils import BridgeState, state_from_update, preprocess_state, _normalize_01, _normalize_angle
+from reinforcement_utils import BridgeState, state_from_update, preprocess_bridge_state, _normalize_01, _normalize_angle
 from example_update_data import example_update_1
 
 class BridgeStateEnvironmentalTests(unittest.TestCase):
@@ -416,7 +416,7 @@ class BridgeStateFromUpdateTest(unittest.TestCase):
 
 class PreprocessTest(unittest.TestCase):
     """Ensure preprocess functions work as expected."""
-    # preprocess_state(l=20.0, w=10.0, max_mass=400.0, allowable_stress=200.0, state=None):
+    # preprocess_bridge_state(l=20.0, w=10.0, max_mass=400.0, allowable_stress=200.0, state=None):
     # x, y, edge_lengths --> x/(sqrt(l**2+h**2))
     # angles --> (sin(x), cos(x))
     # gmass, gmass_r unmodified
@@ -488,10 +488,10 @@ class PreprocessTest(unittest.TestCase):
                       [[0,-1], [0,-1], [-1,0]]])
         np.testing.assert_array_almost_equal(x,y)
     
-    def test_preprocess_state_example_1_sanitycheck(self):
-        """Make sure preprocess_state runs and produces a vector of shape (*,)"""
+    def test_preprocess_bridge_state_example_1_sanitycheck(self):
+        """Make sure preprocess_bridge_state runs and produces a vector of shape (*,)"""
         state = state_from_update(example_update_1)
-        vec   = preprocess_state(state, l = 20, w = 10, max_mass = 400, allowable_stress = 200)
+        vec   = preprocess_bridge_state(state, l = 20, w = 10, max_mass = 400, allowable_stress = 200)
         # vec.shape should be of shape (n,)
         self.assertEqual(len(vec.shape), 1)
         # todo; more?

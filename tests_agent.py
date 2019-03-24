@@ -23,6 +23,24 @@ class BasicAgent_Superficial_Tests(unittest.TestCase):
     def test_(self):
         raise NotImplementedError
 
+    # Tests TODO
+    # Test initial state is None if not provided, is state if provided
+    # Initial rld is None if not provided,
+    #   = state.rld if state rld provided but rld not provided,
+    #   = rld if state.rld provided and rld provided,
+    #   = rld if rld provided but state not provided
+    # Initial environment is None if not provided
+    #   = instance of BHD is provided
+    # Preprocess is preprocess_bridge_state is none provided
+    #   = Provided function otherwises
+    
+    # Test iterations:
+    #   _raw_update is None to begin with, is not None afterwards
+    # Test step_1, step_2, and step_3 do what they are meant to do, in order.
+    #   Test what they do when run in other orders.
+    # Test iterate on it's own
+    
+            
 TestCases = [BasicAgent_Superficial_Tests]
 
 

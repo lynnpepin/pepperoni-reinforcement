@@ -1,10 +1,12 @@
 import numpy as np
 from pepperoni import BridgeHoleDesign as BHD
-from reinforcement_utils import State, state_from_update, _preprocess
+from reinforcement_utils import BridgeState, state_from_update, preprocess_bridge_state
 
 class BasicAgent:
     def __init__(self):
         raise NotImplementedError
+    
+    
     
     """A bare-bones agent, providing the structure for smarter agents.
     
@@ -14,14 +16,14 @@ class BasicAgent:
 
     # Init Arguments
         # Attribute arguments:
-            state:  Instance of State. Optional.
+            state:  Instance of BridgeState. Optional.
                 Provides the initial state of the bridge.
             rld:  Instance of numpy.ndarray. Optional.
                 Leading dancers radii in the circle packing.
                 Overrides state._rld if provided.
             environment:  Instance of BHD, providing update().
                 Update maps rld to a dictionary, representing bridge state.
-            preprocess:  Function : State() --> numpy.ndarray
+            preprocess:  Function : BridgeState() --> numpy.ndarray
                 Preprocesses a bridge state for a neural network. 
            
                         

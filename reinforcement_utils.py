@@ -18,9 +18,9 @@ Provides:
 
     BridgeStatePreprocessor():
         NotImplemented!
-        Class which holds preprocessor values, wrapping _preprocess.
+        Class which holds preprocessor values, wrapping preprocess_bridge_state.
     
-    preprocess_state():
+    preprocess_bridge_state():
         NotImplemented!
         Preprocesses a BridgeState() instance and returns a numpy ndarray.
 """
@@ -141,7 +141,7 @@ def _normalize_angle(x, rad=True):
     return np.moveaxis(np.array([np.cos(x), np.sin(x)]), 0, -1)
 
 
-def preprocess_state(state = None, l=20.0, w=10.0, max_mass=400.0, allowable_stress=200.0):
+def preprocess_bridge_state(state = None, l=20.0, w=10.0, max_mass=400.0, allowable_stress=200.0):
     """Standalone backbone of BridgeStatePreprocessor.
     
     # Arguments
