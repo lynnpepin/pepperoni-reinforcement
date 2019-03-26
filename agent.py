@@ -3,11 +3,6 @@ from pepperoni import BridgeHoleDesign as BHD
 from reinforcement_utils import BridgeState, state_from_update, preprocess_bridge_state
 
 class BasicAgent:
-    def __init__(self):
-        raise NotImplementedError
-    
-    
-    
     """A bare-bones agent, providing the structure for smarter agents.
     
     ex. my_agent = BasicAgent(state = initial_state,
@@ -53,3 +48,6 @@ class BasicAgent:
         2. A dumb, hard-coded agent that explores per simplex.
         3. A dumb, hard-coded agent that explores per GD.
     """
+    def __init__(self):
+        raise NotImplementedError
+
