@@ -108,7 +108,7 @@ def _FEM(Edges,nely,nelx):
     sK = np.reshape(np.transpose(KE1), (64*nelx*nely, 1))
 
     for i in range(len(e)-1, -1, -1):
-        for j in range(64*e[i], (64*(e[i]-1)), -1):
+        for j in range(64*e[i]-1, (64*(e[i]-1))-1, -1):
             iK = np.delete(iK, j, 0)
             jK = np.delete(jK, j, 0)
             sK = np.delete(sK, j, 0)
