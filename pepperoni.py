@@ -6,7 +6,7 @@ import random
 import numpy as np
 from scipy.spatial import Delaunay
 import matplotlib.pyplot as plt
-from _FEM import _ccw, _membershiptest, _FEM
+from FEM import _ccw, _membershiptest, _FEM
 
 class BridgeHoleDesign:
     l = 20 # the half length of the bridge
@@ -73,7 +73,8 @@ class BridgeHoleDesign:
         self._edges = _generate_boundary_edges(self._LD, self._circles, 
             self._faces, self._anchor_x, self._anchor_y, self._cb_origin)
         # Using FEM, calculating the maximum stress and the area of the hole
-        self.sigma, self.area = _FEM(self._edges, self.nely, self.nelx)
+        self.sigma, self.area = _finite_element_analysis(self._edges, self.nely, 
+            self.nelx, self.l, self.h)
         # assuming the density is 1, calculating the mass of the bridge by deducting 
         # the area of hole from the area of the rectangle
         self.mass = self.l * self.h - _get_area_of_all(self._faces)
@@ -114,7 +115,8 @@ class BridgeHoleDesign:
         _modify_boundary_edges(self._edges, self._LD, self._circles, 
             self._faces, self._anchor_x, self._anchor_y, self._cb_origin)
         
-        self.sigma, self.area = _FEM(self._edges, self.nely, self.nelx)
+        self.sigma, self.area = _finite_element_analysis(self._edges, self.nely, 
+            self.nelx, self.l, self.h)
         
         self.mass = self.l * self.h - _get_area_of_all(self._faces)
         
@@ -154,7 +156,29 @@ class BridgeHoleDesign:
         draw the triangulation
         """
         _draw_triangulation(self._tri)
+        
+def _finite_element_analysis(edges, nely, nelx,l,h):
+    """
+    If there are parts of edges exceeding the design domain, return infinity 
+    for stress
+    """
 
+    for e in edges:
+        if e[1] > l or e[2] > h:
+            sigma = 10**10
+            area = l*h
+            break
+    else:
+        if edges[-1][3] > l or edges[-1][4] > h:
+            sigma = 10**10
+            area = l*h
+        else:
+            sigma, area = _FEM(edges, nely, nelx)
+    return sigma, area
+         
+    
+    
+    
 def _get_area_ri(ri, rj, rk):
     """
     calculate the partial difference of the area of triangle determined 
