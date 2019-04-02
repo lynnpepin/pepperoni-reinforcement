@@ -6,7 +6,7 @@ import random
 import numpy as np
 from scipy.spatial import Delaunay
 import matplotlib.pyplot as plt
-from FEM import _ccw, _membershiptest, _FEM
+from _FEM import _ccw, _membershiptest, _FEM
 
 class BridgeHoleDesign:
     l = 20 # the half length of the bridge
