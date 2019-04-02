@@ -41,7 +41,24 @@ class BHDEnv(gym.Env):
         ## Set up observation space
         self.observation_space = None # TODO
         
-        
-        
         raise NotImplementedError
+    
+    def step(self, action):
+        # action = vector
+        raise NotImplementedError
+    
+    def reset(self):
+        raise NotImplementedError
+
+    def render(self, mode='human'):
+        raise NotImplementedError
+
+    def close(self):
+        raise NotImplementedError
+
+    def seed(self, seed=123456789):
+        raise NotImplementedError
+    
+
+    
         
