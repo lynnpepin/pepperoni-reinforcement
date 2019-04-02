@@ -174,7 +174,7 @@ def _finite_element_analysis(edges, nely, nelx,l,h):
             sigma = 10**10
             area = l*h
         else:
-            sigma, area = _FEM(edges, nely, nelx)
+            sigma, area = _FEM(edges, nely, nelx,False)
     return sigma, area
          
     
