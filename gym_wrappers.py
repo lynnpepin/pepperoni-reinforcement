@@ -36,7 +36,7 @@ class BHDEnv(gym.Env):
         ## Set up action space
         nb_rld = len(bridge.rld)
         max_radius = np.sqrt(self.length**2 + self.height**2)
-        self.action_space = gym.spaces.Box(low = 0, high = , shape = (nb_rld,))
+        self.action_space = gym.spaces.Box(low = 0, high = max_radius, shape = (nb_rld,))
         
         ## Set up observation space
         self.observation_space = None # TODO
