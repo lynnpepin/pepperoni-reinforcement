@@ -15,13 +15,13 @@ Provides:
         data is a dict of list, number, or dict, as returned by
           pepperoni.ridgeHoleDesign().update().
         Returns an instance of BridgeState().
-
-    BridgeStatePreprocessor():
-        NotImplemented!
-        Class which holds preprocessor values, wrapping preprocess_bridge_state.
     
     preprocess_bridge_state():
-        NotImplemented!
+        l:  Float
+        w:  Float
+        max_mass:  Float
+        allowable_stress:  Float
+        state:  Instance of BridgeState()
         Preprocesses a BridgeState() instance and returns a numpy ndarray.
 """
 
@@ -99,31 +99,6 @@ def state_from_update(data, state = None):
 ####
 # Preprocessing stuff
 ####
-class _BridgeStatePreprocessor:
-    """Class which stores important meta-variables about the state,
-       and provides a learning-algorithm ready vector.
-       
-    # Init Arguments
-        l, w:  Number, number. Length and width of the bridge.
-        max_mass:  Number, the maximum mass/area of the bridge.
-        allowable_stress:  Number.
-        Others: To be contemplated.
-    
-    # Attributes
-        l:  Float
-        w:  Float
-        max_mass:  Float
-        allowable_stress:  Float
-
-    # Methods
-        preprocess(state): Instance of state to 1d Numpy array
-    
-    # Not yet implemented, but may be useful in the future. Hmm...
-    """
-    def __init__(self):
-        raise NotImplementedError
-
-
 def _normalize_01(x, b=1.0, a = 0.0):
     """Normalize x to [0,1] bounds, given max value b and min value a."""
     # todo: Consider generating warnings if x > b or x < a, or if b <= a
