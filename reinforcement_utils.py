@@ -5,6 +5,11 @@ Provides the point of entry for data from pepperoni into the RL code,
   as well as BridgeState and state preprocessing utility for the RL code.
 
 Provides:
+    preprocess_update(data):
+        Returns a dict of np arrays given the data dictionary provided from
+        BridgeHoleDesign().update(rld)
+
+Provides deprecated:
     BridgeState():
         Class that holds relevant state variables for the learning agent.
         Notation is abused. E.g. The agent might use a history of states,
@@ -28,8 +33,12 @@ Provides:
 
 import numpy as np
 
+
+
 def state_from_update(data, state = None):
-    """Focal point from circlepacking/FEM code to RL side.
+    """Deprecated.
+    
+    Focal point from circlepacking/FEM code to RL side.
     
     Expected to be updated possibly often as the spec for update(rld_new) changes.
     Modifies and returns state if provided, or returns a new state, from the
@@ -117,7 +126,7 @@ def _normalize_angle(x, rad=True):
 
 
 def preprocess_bridge_state(state = None, l=20.0, w=10.0, max_mass=400.0, allowable_stress=200.0):
-    """Standalone backbone of BridgeStatePreprocessor.
+    """Deprecated preprocessor
     
     # Arguments
         l:  Float

@@ -3,9 +3,28 @@
 # BHDEnv
 
 from pepperoni import BridgeHoleDesign
+from reinfrocement_utils import _normalize_01, _normalize_angle
 import numpy as np
 import gym
 
+def observe_bridge_update(data, length = 20.0, width = 10.0, allowable_stress=200.0):
+    """Preprocess data and provide as an observation.
+    
+    Return preprocessed observation dict.
+    """
+    raise NotImplementedError
+
+def data_to_space(data):
+    """Return a gym.spaces.Space() representation of a data.
+    
+    Data must be represntable as a gym.spaces.Space() instance.
+    
+    Recursive! caliborn_clasped_hands_wonder.jpg
+    """
+
+
+# TODO - Implement the above
+# TODO - Barebones space tests
 
 class BHDEnv(gym.Env):
     """

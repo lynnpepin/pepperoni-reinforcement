@@ -9,8 +9,8 @@ from random import random
 from reinforcement_utils import BridgeState, state_from_update, preprocess_bridge_state, _normalize_01, _normalize_angle
 from gym_wrappers import BHDEnv, pep-action-space, pep-observation-space
 
-class NewTest(unittest.TestCase):
-    """ Empty test
+class UtilsTests(unittest.TestCase):
+    """ Test utilities used for the gym_wrapper
     """
     
     def setUp(self):
@@ -18,6 +18,27 @@ class NewTest(unittest.TestCase):
     
     def tearDown(self):
         pass
+    
+    def test_observe_bridge_update(self):
+        # Make sure preprocess_update has the correct shapes
+        bridge = BridgeHoleDesign()
+        data = bridge.update(bridge.rld)
+        obs = preprocess_update(data, length = bridge.l, width = bridge.w, allowable_stress=200.0)
+        
+        #self.assertEqual(len(data['']), len(obs['']))
+        self.assertEqual(len(data['stress']),       len(obs['stress']))
+        self.assertEqual(len(data['mass']),         len(obs['mass']))
+        self.assertEqual(len(data['gmass_rld']),    len(obs['grad_mass_ld']))
+        self.assertEqual(len(data['geometry_info']['positions_ld']), len(obs['points_ld']))
+        self.assertTrue(isinstance(obs['mass_ratio'], (float. int))
+        self.assertTrue(isinstance(obs['stress_ratio'], (float. int))
+        self.assertTrue(0 <= obs['mass_ratio'] <= 1)
+        self.assertTrue(0 <= obs['stress_ratio'] <= 1)
+        
+        
+        # TODO - assert shapes
+        raise NotImplementedError
+
     
     def test_barebones(self):
         """Test the BHD can be instantiated"""
@@ -32,7 +53,7 @@ class NewTest(unittest.TestCase):
         """Description"""
         raise NotImplementedError
 
-TestCases = [NewTest]
+TestCases = [UtilsTest]
 
 def run_tests(TestCaseList):
     for testcase in TestCaseList:
