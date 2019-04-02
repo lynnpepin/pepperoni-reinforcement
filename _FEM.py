@@ -51,8 +51,8 @@ def _membershiptest(px, py, Edges,nely,nelx):
 #         [1,6.5983,4.8978,4.6968,4.8969,0],
 #         [1,4.6968,4.8969,2.6658,4.8931,0],
 #         [1,2.6658,4.8931,0,4,8891,0]]
-
-def _FEM(Edges,nely,nelx):
+#if image=True , it plots the bridge
+def _FEM(Edges,nely,nelx,image):
     E0 = 2e6
     nu = 0.3
     
@@ -210,5 +210,7 @@ def _FEM(Edges,nely,nelx):
     sigma = abs(sigma)
     maxsigma = np.max(sigma)
     area = (nelx*nely)-len(e)
-    plt.imshow(x)
+    if  image:
+        ax = plt.imshow(x)
+        plt.show()
     return maxsigma,area
