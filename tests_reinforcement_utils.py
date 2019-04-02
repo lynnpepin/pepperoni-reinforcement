@@ -512,5 +512,3 @@ def run_tests(TestCaseList):
 
 if (__name__ == "__main__"):
     run_tests(TestCases)
-
-
