@@ -2,27 +2,27 @@
 
 Utilities for reinforcement learning agent.
 Provides the point of entry for data from pepperoni into the RL code,
-  as well as State and state preprocessing utility for the RL code.
+  as well as BridgeState and state preprocessing utility for the RL code.
 
 Provides:
-    State():
+    BridgeState():
         Class that holds relevant state variables for the learning agent.
         Notation is abused. E.g. The agent might use a history of states,
-        which would be some list-like of State().
+        which would be some list-like of BridgeState().
                 
     state_from_update(data):
         The focal point between pepperoni.py and the RL code.
         data is a dict of list, number, or dict, as returned by
           pepperoni.ridgeHoleDesign().update().
-        Returns an instance of State().
-
-    StatePreprocessor():
-        NotImplemented!
-        Class which holds preprocessor values, wrapping _preprocess.
+        Returns an instance of BridgeState().
     
-    _preprocess():
-        NotImplemented!
-        Preprocesses a State() instance and returns a numpy ndarray.
+    preprocess_bridge_state():
+        l:  Float
+        w:  Float
+        max_mass:  Float
+        allowable_stress:  Float
+        state:  Instance of BridgeState()
+        Preprocesses a BridgeState() instance and returns a numpy ndarray.
 """
 
 
@@ -72,13 +72,13 @@ def state_from_update(data, state = None):
         state (optional): An instance of state to update. If not set, a new
             instance is created and reutrned.
 
-    # Returns an instance of State() with its attributes set/updated.
+    # Returns an instance of BridgeState() with its attributes set/updated.
     """
     # Note that rld is not provided, and so rld is not set/updated by this.
     if state is None:
-        state = State()
+        state = BridgeState()
         # an instance of state is provided; modify that instance, and return it.
-    state._set_state(raccb              = np.array(data['raccb']),
+    state.set_state(raccb              = np.array(data['raccb']),
                      ri                 = np.array(data['ri']),
                      stress             =          data['sigma'],
                      mass               =          data['mass'],
@@ -99,31 +99,6 @@ def state_from_update(data, state = None):
 ####
 # Preprocessing stuff
 ####
-class _StatePreprocessor:
-    """Class which stores important meta-variables about the state,
-       and provides a learning-algorithm ready vector.
-       
-    # Init Arguments
-        l, w:  Number, number. Length and width of the bridge.
-        max_mass:  Number, the maximum mass/area of the bridge.
-        allowable_stress:  Number.
-        Others: To be contemplated.
-    
-    # Attributes
-        l:  Float
-        w:  Float
-        max_mass:  Float
-        allowable_stress:  Float
-
-    # Methods
-        preprocess(state): Instance of state to 1d Numpy array
-    
-    # Not yet implemented, but may be useful in the future. Hmm...
-    """
-    def __init__(self):
-        raise NotImplementedError
-
-
 def _normalize_01(x, b=1.0, a = 0.0):
     """Normalize x to [0,1] bounds, given max value b and min value a."""
     # todo: Consider generating warnings if x > b or x < a, or if b <= a
@@ -141,15 +116,15 @@ def _normalize_angle(x, rad=True):
     return np.moveaxis(np.array([np.cos(x), np.sin(x)]), 0, -1)
 
 
-def _preprocess(state = None, l=20.0, w=10.0, max_mass=400.0, allowable_stress=200.0):
-    """Standalone backbone of StatePreprocessor.
+def preprocess_bridge_state(state = None, l=20.0, w=10.0, max_mass=400.0, allowable_stress=200.0):
+    """Standalone backbone of BridgeStatePreprocessor.
     
     # Arguments
         l:  Float
         w:  Float
         max_mass:  Float
         allowable_stress:  Float
-        state:  Instance of State()
+        state:  Instance of BridgeState()
         
     # Returns 1d Numpy array, preprocessed and ready for use in a neural network.
     """
@@ -203,7 +178,7 @@ def _preprocess(state = None, l=20.0, w=10.0, max_mass=400.0, allowable_stress=2
 ####
 # State stuff
 ####
-class State:
+class BridgeState:
     """Stores environmental state of our RL agent. A glorified dataclass.
     
     
@@ -238,18 +213,18 @@ class State:
         
     
     # Methods
-        Getters and _setters for each attribute,
-        _set_state(...) to set each attribute at once. Returns self.
+        Getters and setters for each attribute,
+        set_state(...) to set each attribute at once. Returns self.
         
-        To be considered: A .copy() attribute, returning a new State instance.
+        To be considered: A .copy() attribute, returning a new BridgeState instance.
     
     # Examples
         # Initialize an empty state and set some basic values
-        state = reinforcement_utils.State()
-        state._set_mass(300)
-        state._set_ri(np.array([1,1,1,3]))
+        state = reinforcement_utils.BridgeState()
+        state.set_mass(300)
+        state.set_ri(np.array([1,1,1,3]))
         # Same thing, but a one liner
-        state = reinforcement_utils.State(mass = 300, ri = np.array([1,1,1,3]))
+        state = reinforcement_utils.BridgeState(mass = 300, ri = np.array([1,1,1,3]))
     """
     def __init__(self, rld              = None,
                        raccb            = None,
@@ -274,7 +249,7 @@ class State:
         self._angles_ld, self._angles_accb = [None]*2
         self._points_ld, self._points_accb, self._points_ci = [None]*3
          
-        self._set_state(rld = rld, raccb = raccb, ri = ri,
+        self.set_state(rld = rld, raccb = raccb, ri = ri,
                         stress = stress, mass = mass,
                         grad_mass = grad_mass, grad_mass_ld = grad_mass_ld,
                         edge_lengths_ld  = edge_lengths_ld,
@@ -340,27 +315,27 @@ class State:
         return self._points_ci
     
     
-    def _set_rld(self,rld):
+    def set_rld(self,rld):
         _check_array_and_shape(self.get_rld(), rld)
         self._rld = rld
 
-    def _set_raccb(self,raccb):
+    def set_raccb(self,raccb):
         _check_array_and_shape(self.get_raccb(), raccb)
         self._raccb = raccb
 
-    def _set_ri(self,ri):
+    def set_ri(self,ri):
         _check_array_and_shape(self.get_ri(), ri)
         self._ri = ri
 
-    def _set_stress(self,stress):
+    def set_stress(self,stress):
         _check_number_and_geqzero(stress)
         self._stress = stress
 
-    def _set_mass(self,mass):
+    def set_mass(self,mass):
         _check_number_and_geqzero(mass)
         self._mass = mass
 
-    def _set_grad_mass(self,grad_mass):
+    def set_grad_mass(self,grad_mass):
         _check_array_and_shape(self.get_grad_mass(), grad_mass)
         if self.get_rld() is not None and \
            self.get_raccb() is not None and \
@@ -370,46 +345,46 @@ class State:
                 raise ValueError("Can't set grad_mass where |grad_mass| != |r_all|.")
         self._grad_mass = grad_mass
 
-    def _set_grad_mass_ld(self,grad_mass_ld):
+    def set_grad_mass_ld(self,grad_mass_ld):
         if self.get_rld() is not None:
             if len(self.get_rld()) != len(grad_mass_ld):
                 raise ValueError("Can't set grad_mass where |grad_mass| != |rld|.")
         _check_array_and_shape(self.get_grad_mass_ld(), grad_mass_ld)
         self._grad_mass_ld = grad_mass_ld
 
-    def _set_edge_lengths_ld(self,edge_lengths_ld):
+    def set_edge_lengths_ld(self,edge_lengths_ld):
         _check_array_and_shape(self.get_edge_lengths_ld(), edge_lengths_ld)
         self._edge_lengths_ld =  edge_lengths_ld
 
-    def _set_edge_lengths_accb(self,edge_lengths_accb):
+    def set_edge_lengths_accb(self,edge_lengths_accb):
         _check_array_and_shape(self.get_edge_lengths_accb(), edge_lengths_accb)
         self._edge_lengths_accb = edge_lengths_accb
 
-    def _set_angles_ld(self,angles_ld):
+    def set_angles_ld(self,angles_ld):
         _check_array_and_shape(self.get_angles_ld(), angles_ld)
         self._angles_ld = angles_ld
 
-    def _set_angles_accb(self,angles_accb):
+    def set_angles_accb(self,angles_accb):
         _check_array_and_shape(self.get_angles_accb(), angles_accb)
         self._angles_accb = angles_accb
 
-    def _set_points_ld(self,points_ld):
+    def set_points_ld(self,points_ld):
         _check_array_and_shape(self.get_points_ld(), points_ld, one_d = False)
         _check_points(points_ld)
         self._points_ld = points_ld
 
-    def _set_points_accb(self,points_accb):
+    def set_points_accb(self,points_accb):
         _check_array_and_shape(self.get_points_accb(), points_accb, one_d = False)
         _check_points(points_accb)
         self._points_accb = points_accb
 
-    def _set_points_ci(self,points_ci):
+    def set_points_ci(self,points_ci):
         _check_array_and_shape(self.get_points_ci(), points_ci, one_d = False)
         _check_points(points_ci)
         self._points_ci = points_ci
 
     
-    def _set_state(self, rld                = None,
+    def set_state(self, rld                = None,
                          raccb              = None,
                          ri                 = None,
                          stress             = None,
@@ -424,51 +399,51 @@ class State:
                          points_accb        = None,
                          points_ci          = None):
         if rld is not None:
-            self._set_rld(rld)
+            self.set_rld(rld)
 
         if raccb is not None:
-            self._set_raccb(raccb)
+            self.set_raccb(raccb)
 
         if ri is not None:
-            self._set_ri(ri)
+            self.set_ri(ri)
 
         if stress is not None:
-            self._set_stress(stress)
+            self.set_stress(stress)
 
         if mass is not None:
-            self._set_mass(mass)
+            self.set_mass(mass)
 
         if grad_mass is not None:
-            self._set_grad_mass(grad_mass)
+            self.set_grad_mass(grad_mass)
 
         if grad_mass_ld is not None:
-            self._set_grad_mass_ld(grad_mass_ld)
+            self.set_grad_mass_ld(grad_mass_ld)
 
         if edge_lengths_ld is not None:
-            self._set_edge_lengths_ld(edge_lengths_ld)
+            self.set_edge_lengths_ld(edge_lengths_ld)
 
         if edge_lengths_accb is not None:
-            self._set_edge_lengths_accb(edge_lengths_accb)
+            self.set_edge_lengths_accb(edge_lengths_accb)
 
         if angles_ld is not None:
-            self._set_angles_ld(angles_ld)
+            self.set_angles_ld(angles_ld)
 
         if angles_accb is not None:
-            self._set_angles_accb(angles_accb)
+            self.set_angles_accb(angles_accb)
 
         if points_ld is not None:
-            self._set_points_ld(points_ld)
+            self.set_points_ld(points_ld)
 
         if points_accb is not None:
-            self._set_points_accb(points_accb)
+            self.set_points_accb(points_accb)
 
         if points_ci is not None:
-            self._set_points_ci(points_ci)
+            self.set_points_ci(points_ci)
 
         return self
 
 
-# Misc functions used in State()
+# Misc functions used in BridgeState()
 def _check_array_and_shape(x, new_x, one_d=True):
     """Check to ensure new_x as an array is the same shape as x.
     if 1d=True, make sure the shape of new_x is (*,)"""
