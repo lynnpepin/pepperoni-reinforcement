@@ -6,7 +6,7 @@ Unit tests for reinforcement_utils.py.
 import unittest
 import numpy as np
 from random import random
-from reinforcement_utils import BridgeState, state_from_update, preprocess_bridge_state, _normalize_01, _normalize_angle, preprocess_update
+from reinforcement_utils import BridgeState, state_from_update, preprocess_bridge_state, _normalize_01, _normalize_angle
 from example_update_data import example_update_1
 
 class BridgeStateEnvironmentalTests(unittest.TestCase):
@@ -482,7 +482,7 @@ class PreprocessUtilsTest(unittest.TestCase):
         # vec.shape should be of shape (n,)
         self.assertEqual(len(vec.shape), 1)
 
-def PreprocessTest(unittest.TestCase):
+class PreprocessTest(unittest.TestCase):
     def test_preprocess_bridge_state_example_1_sanitycheck(self):
         """Make sure preprocess_bridge_state runs and produces a vector of shape (*,)"""
         state = state_from_update(example_update_1)

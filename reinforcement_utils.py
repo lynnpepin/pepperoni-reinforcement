@@ -4,10 +4,6 @@ Utilities for reinforcement learning agent.
 Provides the point of entry for data from pepperoni into the RL code,
   as well as BridgeState and state preprocessing utility for the RL code.
 
-Provides:
-    preprocess_update(data):
-        Returns a dict of np arrays given the data dictionary provided from
-        BridgeHoleDesign().update(rld)
 
 Provides deprecated:
     BridgeState():
