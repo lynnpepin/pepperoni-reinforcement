@@ -68,21 +68,22 @@ class UtilsTests(unittest.TestCase):
         obs = observe_bridge_update(data, length = bridge.l, height = bridge.h, allowable_stress=200.0)
         self.assertTrue(ob_space.contains(obs))
         
-        # Plus some random observations:
-        for ii in range(3):
+        # Increase 1 to a higher number if desired
+        for ii in range(1):
             print(ii)
             bridge.update(rld)
             e = 0.001*np.random.rand(len(rld))
             data = bridge.update(rld + e)
             obs = observe_bridge_update(data, length = bridge.l, height = bridge.h, allowable_stress=200.0)
             self.assertTrue(ob_space.contains(obs))
-        
+
+    def test_BHDEnv_init(self):
+        bridge = BHDEnv(bridge=None, length = 20, height = 10, allowable_stress = 200.0)
     
-    def test_barebones(self):
-        """Test the BHD Env can be instantiated and that all its functions work."""
+    def test_BHDEnv_trial(self):
         bridge = BHDEnv(bridge=None, length = 20, height = 10, allowable_stress = 200.0)
         bridge.seed(123456789)
-        ob = env.reset()
+        ob = bridge.reset()
         
         # Check ob is a dict with what we want
         keys = ['mass', 'stress', 'gmass_rld', 'points_ld', 'mass_ratio', 'stress_ratio']
@@ -94,18 +95,22 @@ class UtilsTests(unittest.TestCase):
         rld_new = 0.001 * np.random.rand(len(rld))
         ob, reward, done, info = env.step(rld_new)
         self.assertTrue(isinstance(ob, dict))
+        self.assertTrue(bridge.observation_space.contains(ob))
         self.assertTrue(isinstance(reward, float))
         self.assertTrue(isinstance(done, bool))
         self.assertTrue(isinstance(info, dict))
         
+        # Make sure each key is in the dict
         for key in keys:
             assertTrue(key in ob.keys())
         
         ob = env.reset()
+        # Resetting bridge after step means rld should be the same)
+        self.assertTrue(bridge.bridge.rld == rld)
         keys = ['mass', 'stress', 'gmass_rld', 'points_ld', 'mass_ratio', 'stress_ratio']
         for key in keys:
             assertTrue(key in ob.keys())
-            
+        
         env.seed(612)
         env.seed(413)
         env.seed(1025)

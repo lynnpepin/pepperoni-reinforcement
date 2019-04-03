@@ -37,7 +37,6 @@ def observe_bridge_update(data, length = 20.0, height = 10.0, allowable_stress=2
                                           b = max_radius)
     out['mass_ratio']  = np.array([(max_mass - data['mass'])/max_mass])
     out['stress_ratio']= np.array([(allowable_stress - data['sigma'])/allowable_stress])
-    
     return out
 
 
@@ -65,7 +64,7 @@ class BHDEnv(gym.Env):
     """
     BridgeHoleDesign environment.
     See: https://github.com/openai/gym/blob/master/gym/core.py
-        (Documentation shamelessly stolen from there.)
+        (Documentation shamelessly adapted from there.)
     
     Attributes:
         action_space: The Space object corresponding to valid actions
@@ -87,46 +86,54 @@ class BHDEnv(gym.Env):
         
         self.__version__ = "0.1.0"
         
-        # Set up bridge
-        self.bridge = bridge
-        if self.bridge is None:
-            self.bridge = BridgeHoleDesign()
+        # Set up bridge values
+        self.length = length
+        self.height = height
+        self.allowable_stress = allowable_stress
+        self.max_mass = self.length * self.height
+        # self.reset sets self.bridge, used later
+        self.reset(bridge = bridge)
+        self.ld_length = len(self.bridge.rld)
+        self.max_radius = np.sqrt(self.length**2 + self.height**2)
         
-        ## Set up reward range from mass.
-        # mass = l*h - hole_area; and reward = max_mass - current_mass
-        assert(length == self.bridge.l)
-        assert(height == self.bridge.h)
-        max_mass = length*height
-        self.reward_range = (0, max_mass)
-        
-        ## Set up action space
-        ld_length = len(self.bridge.rld)
-        max_radius = np.sqrt(length**2 + height**2)
-        self.action_space = gym.spaces.Box(low = 0, high = max_radius, shape = (ld_length,))
-        
-        ## Set up observation space
-        self.observation_space = observation_space_dict(ld_length = ld_length)
-    
+        # Set up values required for Env
+        self.reward_range = (0, self.max_mass)
+        self.action_space = gym.spaces.Box(low = 0, high = self.max_radius, shape = (self.ld_length,))
+        self.observation_space = observation_space_dict(ld_length = self.ld_length)
+
+
     def step(self, action):
         """Accepts an action and returns a tuple (observation, reward, done, info).
         
         Argumentss:
-            action (object): an action provided to the environment
+            action (np.array): an action provided to the environment. I.e. rld
             
         Returns:
-            observation (object): agent's observation of the current environment
-            reward (float) : amount of reward returned after previous action
-            done (boolean): whether the episode has ended, in which case further step() calls will return undefined results
+            observation (dict): agent's observation of the current environment.
+                See observe_bridge_update
+            reward (float) : reward returned: observation['mass_ratio']
+            done (boolean): whether the episode has ended, in which case further
+                step() calls will return undefined results.
+                True if observation['stress'] >= allowable_stress.
             info (dict): auxiliary diagnostic information for debugging, logging.
         """
+        # TODO - Tests
         raise NotImplementedError
-    
-    def reset(self):
+
+
+    def reset(self, bridge=None):
         """Resets the state of the environment and returns an initial observation.
-        Returns: observation (object): the initial observation of the
-            space.
+        Returns: observation (object): the initial observation of the space.
         """
-        raise NotImplementedError
+        self.bridge = bridge
+        if self.bridge is None:
+            self.bridge = BridgeHoleDesign()
+        
+        data = self.bridge.update(self.bridge.rld)
+        ob = observe_bridge_update(data, length = self.length, height = self.height,
+                                   allowable_stress=self.allowable_stress)
+        return ob
+
 
     def render(self, mode='human'):
         """Renders the environment.
@@ -145,13 +152,15 @@ class BHDEnv(gym.Env):
         """
         raise NotImplementedError
 
+
     def close(self):
         """Override _close in your subclass to perform any necessary cleanup.
         
         Environments will automatically close() themselves when
         garbage collected or when the program exits.
         """
-        raise NotImplementedError
+        return
+
 
     def seed(self, seed=123456789):
         """Sets the seed for this env's random number generator(s).
@@ -168,8 +177,7 @@ class BHDEnv(gym.Env):
               'seed'. Often, the main seed equals the provided 'seed', but
               this won't be true if seed=None, for example.
         """
-        raise NotImplementedError
-    
+        gym.logger.warn("Could not seed environment " + str(self))
 
     
         
