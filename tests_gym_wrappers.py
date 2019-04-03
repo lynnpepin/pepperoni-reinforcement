@@ -91,13 +91,20 @@ class UtilsTests(unittest.TestCase):
     def test_BHDEnv_trial(self):
         bridge_env = BHDEnv(bridge=None, length = 20, height = 10, allowable_stress = 200.0)
         rld = bridge_env.bridge.rld 
-        rld_new = rld + 0.001 * np.random.rand(len(rld))
-        ob, reward, done, info = bridge_env.step(rld_new)
+        del_rld = 0.001 * np.random.rand(len(rld))
+        ob, reward, done, info = bridge_env.step(del_rld)
         self.assertTrue(isinstance(ob, dict))
         self.assertTrue(bridge_env.observation_space.contains(ob))
         self.assertTrue(isinstance(reward, float))
         self.assertTrue(isinstance(done, (bool, np.bool, np.bool8, np.bool)))
         self.assertTrue(isinstance(info, dict))
+        
+        # do some steps
+        for ii in range(10):
+            print(ii)
+            rld = bridge_env.bridge.rld 
+            del_rld = 0.001 * np.random.rand(len(rld))
+            ob, reward, done, info = bridge_env.step(del_rld)
         
         # Make sure each key is in the dict
         keys = ['mass', 'stress', 'gmass_rld', 'points_ld', 'mass_ratio', 'stress_ratio']

@@ -109,8 +109,10 @@ class BHDEnv(gym.Env):
     def step(self, action):
         """Accepts an action and returns a tuple (observation, reward, done, info).
         
-        Argumentss:
-            action (np.array): an action provided to the environment. I.e. rld
+        Arguments:
+            action (np.array): an action provided to the environment.
+                Here, the actor performs gradient descent, so the 'action'
+                is a vector to be added to rld.
             
         Returns:
             observation (dict): agent's observation of the current environment.
@@ -122,7 +124,8 @@ class BHDEnv(gym.Env):
             info (dict): Empty dict; to be used for debugging and logging info.
                          
         """
-        data = self.bridge.update(action)
+        rld = self.bridge.rld
+        data = self.bridge.update(rld + action)
         ob = self._get_ob(data)
         reward = ob['mass_ratio'][0]  # Remember, reward is an array shape (1,)
         done = (ob['stress'] > self.allowable_stress)[0]
