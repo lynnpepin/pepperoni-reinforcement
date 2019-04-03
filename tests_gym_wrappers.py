@@ -78,45 +78,43 @@ class UtilsTests(unittest.TestCase):
             self.assertTrue(ob_space.contains(obs))
 
     def test_BHDEnv_init(self):
-        bridge = BHDEnv(bridge=None, length = 20, height = 10, allowable_stress = 200.0)
+        bridge_env = BHDEnv(bridge=None, length = 20, height = 10, allowable_stress = 200.0)
+    
+    def test_BHDEnv_seed_and_reset(self):
+        bridge_env = BHDEnv(bridge=None, length = 20, height = 10, allowable_stress = 200.0)
+        bridge_env.seed(123456789)
+        ob = bridge_env.reset()
+
+    def test_BHDEnv_keys(self):
+        bridge_env = BHDEnv(bridge=None, length = 20, height = 10, allowable_stress = 200.0)
     
     def test_BHDEnv_trial(self):
-        bridge = BHDEnv(bridge=None, length = 20, height = 10, allowable_stress = 200.0)
-        bridge.seed(123456789)
-        ob = bridge.reset()
-        
-        # Check ob is a dict with what we want
-        keys = ['mass', 'stress', 'gmass_rld', 'points_ld', 'mass_ratio', 'stress_ratio']
-        for key in keys:
-            assertTrue(key in ob.keys())
-        
-        # TODO - Get rld, from observation, do step
-        rld = bridge.rld 
-        rld_new = 0.001 * np.random.rand(len(rld))
-        ob, reward, done, info = env.step(rld_new)
+        bridge_env = BHDEnv(bridge=None, length = 20, height = 10, allowable_stress = 200.0)
+        rld = bridge_env.bridge.rld 
+        rld_new = rld + 0.001 * np.random.rand(len(rld))
+        ob, reward, done, info = bridge_env.step(rld_new)
         self.assertTrue(isinstance(ob, dict))
-        self.assertTrue(bridge.observation_space.contains(ob))
+        self.assertTrue(bridge_env.observation_space.contains(ob))
         self.assertTrue(isinstance(reward, float))
-        self.assertTrue(isinstance(done, bool))
+        self.assertTrue(isinstance(done, (bool, np.bool, np.bool8, np.bool)))
         self.assertTrue(isinstance(info, dict))
         
         # Make sure each key is in the dict
-        for key in keys:
-            assertTrue(key in ob.keys())
-        
-        ob = env.reset()
-        # Resetting bridge after step means rld should be the same)
-        self.assertTrue(bridge.bridge.rld == rld)
         keys = ['mass', 'stress', 'gmass_rld', 'points_ld', 'mass_ratio', 'stress_ratio']
         for key in keys:
-            assertTrue(key in ob.keys())
+            self.assertTrue(key in ob.keys())
         
-        env.seed(612)
-        env.seed(413)
-        env.seed(1025)
-        env.close()
+        ob = bridge_env.reset()
+        # Resetting bridge_env after step means rld should be the same)
+        self.assertTrue(bridge_env.bridge.rld == rld)
+        for key in keys:
+            self.assertTrue(key in ob.keys())
         
-        
+        bridge_env.seed(612)
+        bridge_env.seed(413)
+        bridge_env.seed(1025)
+        bridge_env.close()
+
 
 TestCases = [UtilsTests]
 

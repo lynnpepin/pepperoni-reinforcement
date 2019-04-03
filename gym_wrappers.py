@@ -101,7 +101,7 @@ class BHDEnv(gym.Env):
         self.action_space = gym.spaces.Box(low = 0, high = self.max_radius, shape = (self.ld_length,))
         self.observation_space = observation_space_dict(ld_length = self.ld_length)
 
-    def _get_ob(data):
+    def _get_ob(self,data):
         ob = observe_bridge_update(data=data, length = self.length, height = self.height,
                                    allowable_stress = self.allowable_stress)
         return ob
@@ -119,11 +119,16 @@ class BHDEnv(gym.Env):
             done (boolean): whether the episode has ended, in which case further
                 step() calls will return undefined results.
                 True if observation['stress'] >= allowable_stress.
-            info (dict): auxiliary diagnostic information for debugging, logging.
+            info (dict): Empty dict; to be used for debugging and logging info.
+                         
         """
         data = self.bridge.update(action)
-        ob = _get_ob(data)
-        # TODO
+        ob = self._get_ob(data)
+        reward = ob['mass_ratio'][0]  # Remember, reward is an array shape (1,)
+        done = (ob['stress'] > self.allowable_stress)[0]
+        info = {}
+        
+        return ob, reward, done, info
 
 
     def reset(self, bridge=None):
@@ -135,7 +140,7 @@ class BHDEnv(gym.Env):
             self.bridge = BridgeHoleDesign()
         
         data = self.bridge.update(self.bridge.rld)
-        ob = _get_ob(data)
+        ob = self._get_ob(data)
         return ob
 
 
