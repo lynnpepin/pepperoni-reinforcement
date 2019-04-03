@@ -21,8 +21,8 @@ def observe_bridge_update(data, length = 20.0, height = 10.0, allowable_stress=2
                 'stress' --> number,
                 'mass_ratio' --> number,
                 'stress_ratio' --> number,
-                'gmass_rld' --> np array, same shape as rld
-                'points_ld' --> np array, same shape as rld
+                'gmass_rld' --> np array shape (n,2), same shape as rld
+                'points_ld' --> np array shape (n,)
         All values are preprocessed, normalized from 0 to 1.
     """
     max_radius = np.sqrt(length**2 + height**2)
@@ -39,10 +39,8 @@ def observe_bridge_update(data, length = 20.0, height = 10.0, allowable_stress=2
     
     return out
 
-# TODO - Finish implementation of this,
-#        do some tests,
-#        then get to the BHD Env test!
-def observation_space_dict(ld_length):
+
+def observation_space_dict(ld_length = 10):
     out = { 'mass' : Box(low = 0.0, high = 1.0, shape = [1]),
             'stress' : Box(low = 0.0, high = 1.0, shape = [1]),
             'mass_ratio' : Box(low = 0.0, high = 1.0, shape = [1]),
@@ -50,7 +48,8 @@ def observation_space_dict(ld_length):
             'points_ld' : Box(low = 0.0, high = 1.0, shape = [ld_length]),
             'gmass_rld' : Box(low = -1, high = 1, shape = [ld_length])
           }
-    return out
+    return Dict(out)
+
 
 class BHDEnv(gym.Env):
     """

@@ -39,6 +39,33 @@ class UtilsTests(unittest.TestCase):
         self.assertTrue(0 <= obs['stress_ratio'] <= 1)
         
     
+    def test_observation_space_dict(self):
+        ob_space = observation_space_dict(ld_length = 25)
+        somefloat = .55
+        someint = 2
+        ld_length = 25
+        somevec = np.random.rand(ld_length)
+        somepoints = np.random.rand(ld_length,2)
+        
+        # It should be a Dict space
+        self.assertTrue(isinstance(ob_space, Dict))
+        
+        # Test each part
+        self.assertTrue(ob_space['mass'].contains(0.55))
+        self.assertTrue(ob_space['stress'].contains(0.55))
+        self.assertTrue(ob_space['mass_ratio'].contains(0.55))
+        self.assertTrue(ob_space['stress_ratio'].contains(0.55))
+        self.assertTrue(ob_space['gmass_rld'].contains(somevec))
+        self.assertTrue(ob_space['points_ld'].contains(somepoints))
+        
+        # It should contain an observation in its space!
+        # TODO - how to do contains? What is an ordered dict?
+        bridge = BridgeHoleDesign()
+        data = bridge.update(bridge.rld)
+        obs = observe_bridge_update(data, length = bridge.l, height = bridge.h, allowable_stress=200.0)
+        self.assertTrue(ob_space.contains(obs))
+        
+    
     def test_barebones(self):
         """Test the BHD Env can be instantiated and that all its functions work."""
         bridge = BHDEnv(bridge=None, length = 20, height = 10, allowable_stress = 200.0)
