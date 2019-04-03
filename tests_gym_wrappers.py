@@ -10,6 +10,7 @@ from reinforcement_utils import BridgeState, state_from_update, preprocess_bridg
 from gym_wrappers import BHDEnv, observe_bridge_update, observation_space_dict
 from pepperoni import BridgeHoleDesign
 from gym.spaces import Box, Dict, Discrete, MultiBinary, MultiDiscrete, Tuple
+from collections import OrderedDict
 
 class UtilsTests(unittest.TestCase):
     """ Test utilities used for the gym_wrapper
@@ -27,12 +28,15 @@ class UtilsTests(unittest.TestCase):
         data = bridge.update(bridge.rld)
         obs = observe_bridge_update(data, length = bridge.l, height = bridge.h, allowable_stress=200.0)
         
-        self.assertTrue(isinstance(obs['mass'], (float, int)))
-        self.assertTrue(isinstance(obs['stress'], (float, int)))
+        self.assertTrue(isinstance(obs, OrderedDict))
+        self.assertTrue(isinstance(obs['mass'], np.ndarray))
+        self.assertTrue(isinstance(obs['stress'], np.ndarray))
+        self.assertTrue(obs['mass'].shape == obs['stress'].shape == (1,))
         self.assertEqual(len(data['gmass_rld']), len(obs['gmass_rld']))
         self.assertEqual(len(data['geometry_info']['positions_ld']), len(obs['points_ld']))
-        self.assertTrue(isinstance(obs['mass_ratio'], (float, int)))
-        self.assertTrue(isinstance(obs['stress_ratio'], (float, int)))
+        self.assertTrue(isinstance(obs['mass_ratio'], np.ndarray))
+        self.assertTrue(isinstance(obs['stress_ratio'], np.ndarray))
+        self.assertTrue(obs['mass_ratio'].shape == obs['stress_ratio'].shape == (1,))
         self.assertTrue(0 <= obs['mass'] <= 1)
         self.assertTrue(0 <= obs['stress'] <= 1)
         self.assertTrue(0 <= obs['mass_ratio'] <= 1)
@@ -40,30 +44,38 @@ class UtilsTests(unittest.TestCase):
         
     
     def test_observation_space_dict(self):
-        ob_space = observation_space_dict(ld_length = 25)
-        somefloat = .55
-        someint = 2
-        ld_length = 25
-        somevec = np.random.rand(ld_length)
+        ld_length = 10
+        ob_space = observation_space_dict(ld_length = ld_length)
+        somefloat = np.array([.55])
+        somevec = np.random.rand(ld_length) - .5
         somepoints = np.random.rand(ld_length,2)
         
         # It should be a Dict space
         self.assertTrue(isinstance(ob_space, Dict))
         
-        # Test each part
-        self.assertTrue(ob_space['mass'].contains(0.55))
-        self.assertTrue(ob_space['stress'].contains(0.55))
-        self.assertTrue(ob_space['mass_ratio'].contains(0.55))
-        self.assertTrue(ob_space['stress_ratio'].contains(0.55))
-        self.assertTrue(ob_space['gmass_rld'].contains(somevec))
-        self.assertTrue(ob_space['points_ld'].contains(somepoints))
+        # Test each space
+        self.assertTrue(ob_space.spaces['mass'].contains(somefloat))
+        self.assertTrue(ob_space.spaces['stress'].contains(somefloat))
+        self.assertTrue(ob_space.spaces['mass_ratio'].contains(somefloat))
+        self.assertTrue(ob_space.spaces['stress_ratio'].contains(somefloat))
+        self.assertTrue(ob_space.spaces['gmass_rld'].contains(somevec))
+        self.assertTrue(ob_space.spaces['points_ld'].contains(somepoints))
         
-        # It should contain an observation in its space!
-        # TODO - how to do contains? What is an ordered dict?
+        # The observation should be inside its space!
         bridge = BridgeHoleDesign()
-        data = bridge.update(bridge.rld)
+        rld = bridge.rld
+        data = bridge.update(rld)
         obs = observe_bridge_update(data, length = bridge.l, height = bridge.h, allowable_stress=200.0)
         self.assertTrue(ob_space.contains(obs))
+        
+        # Plus some random observations:
+        for ii in range(3):
+            print(ii)
+            bridge.update(rld)
+            e = 0.001*np.random.rand(len(rld))
+            data = bridge.update(rld + e)
+            obs = observe_bridge_update(data, length = bridge.l, height = bridge.h, allowable_stress=200.0)
+            self.assertTrue(ob_space.contains(obs))
         
     
     def test_barebones(self):
