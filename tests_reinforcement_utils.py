@@ -21,8 +21,6 @@ class BridgeStateEnvironmentalTests(unittest.TestCase):
         self.some_angles=np.array([1.0, 2.0, -1.0, 0.0])
         self.other_angles=np.array([0.62, 2.2, -1.3, 1.0])
         
-        pass
-        
     def tearDown(self):
         pass
         
