@@ -101,6 +101,10 @@ class BHDEnv(gym.Env):
         self.action_space = gym.spaces.Box(low = 0, high = self.max_radius, shape = (self.ld_length,))
         self.observation_space = observation_space_dict(ld_length = self.ld_length)
 
+    def _get_ob(data):
+        ob = observe_bridge_update(data=data, length = self.length, height = self.height,
+                                   allowable_stress = self.allowable_stress)
+        return ob
 
     def step(self, action):
         """Accepts an action and returns a tuple (observation, reward, done, info).
@@ -117,8 +121,9 @@ class BHDEnv(gym.Env):
                 True if observation['stress'] >= allowable_stress.
             info (dict): auxiliary diagnostic information for debugging, logging.
         """
-        # TODO - Tests
-        raise NotImplementedError
+        data = self.bridge.update(action)
+        ob = _get_ob(data)
+        # TODO
 
 
     def reset(self, bridge=None):
@@ -130,8 +135,7 @@ class BHDEnv(gym.Env):
             self.bridge = BridgeHoleDesign()
         
         data = self.bridge.update(self.bridge.rld)
-        ob = observe_bridge_update(data, length = self.length, height = self.height,
-                                   allowable_stress=self.allowable_stress)
+        ob = _get_ob(data)
         return ob
 
 
@@ -151,33 +155,5 @@ class BHDEnv(gym.Env):
             mode (str): the mode to render with
         """
         raise NotImplementedError
-
-
-    def close(self):
-        """Override _close in your subclass to perform any necessary cleanup.
-        
-        Environments will automatically close() themselves when
-        garbage collected or when the program exits.
-        """
-        return
-
-
-    def seed(self, seed=123456789):
-        """Sets the seed for this env's random number generator(s).
-        
-        Note:
-            Some environments use multiple pseudorandom number generators.
-            We want to capture all such seeds used in order to ensure that
-            there aren't accidental correlations between multiple generators.
-            
-        Returns:
-            list<bigint>: Returns the list of seeds used in this env's random
-              number generators. The first value in the list should be the
-              "main" seed, or the value which a reproducer should pass to
-              'seed'. Often, the main seed equals the provided 'seed', but
-              this won't be true if seed=None, for example.
-        """
-        gym.logger.warn("Could not seed environment " + str(self))
-
     
         
