@@ -31,8 +31,7 @@ def observe_bridge_update(data, length = 20.0, height = 10.0, allowable_stress=2
     """
     max_radius = np.sqrt(length**2 + height**2)
     max_mass   = length*height
-    gmass_rld = np.array(data['gmass_rld'])
-    gmass_rld = gmass_rld / np.linalg.norm(gmass_rld)
+    gmass_rld = np.tanh(np.array(data['gmass_rld']))
     points_ld = _normalize_01(np.array(data['geometry_info']['positions_ld']),
                               b = max_radius)
     mass = _normalize_01(data['mass'], b = max_mass)
