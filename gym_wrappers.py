@@ -1,3 +1,21 @@
+"""gym_wrappers.py
+
+Provides a useful wrapper between the environment code (pepperoni.py, _FEM.py) and
+the learning code.
+
+Provides:
+    BHDEnv(bridge = instance of pepperoni.BridgeHoleDesign,
+           length = float,
+           height = float,
+           allowable_stress = float)
+        BHDEnv an OpenAI Gym gym.Env object.
+    
+   observe_bridge_update(data, length, height, allowable_stress)
+   observation_space_box(ld_length, ld_count, extra_length, low, high)
+   _normalize_01(x, b, a)
+   _normalize_angle(x, rad=True)
+"""
+
 import numpy as np
 import gym
 from gym.spaces import Box, Dict
@@ -6,17 +24,35 @@ from pepperoni import BridgeHoleDesign
 
 
 def _normalize_01(x, b=1.0, a=0.0):
-    """Normalize x to [0,1] bounds, given max value b and min value a."""
+    """Normalize x to [0,1] bounds, given max value b and min value a.
+    
+    Arguments:
+        x:  int, float, or np.ndarray,
+            such that x (or all elements in x) are in the range [a,b]
+        b:  float
+        a:  float, less than b
+    
+    Returns:
+        float if x is int or float
+        np.ndarray is x is np.ndarray"""
     return (x - a) / (b - a)
 
 
 def _normalize_angle(x, rad=True):
     """Given an angle, return the (cos(x), sin(x)) pair represnting it.
     Given an numpy array of shape (a,b,...,c), returns an array of shape
-    (a,b,...,c,2), where the last value indexes cos or sin."""
+    (a,b,...,c,2), where the last value indexes cos or sin.
+    
+    Arguments:
+        x:  int, float, or np.ndarray
+        rad:  Boolean. True for radians, False for degrees.
+
+    Returns:
+        float if x is int or float
+        np.ndarray if x is np.ndarray, shape (2, *)."""
     if not rad:
         x = x * np.pi / 180
-
+    
     return np.moveaxis(np.array([np.cos(x), np.sin(x)]), 0, -1)
 
 
@@ -40,9 +76,10 @@ def observe_bridge_update(data,
               [32]    = mass_ratio (reward). Always at [-2]
               [34]    = stress_ratio.        Always at [-1]
         All values are preprocessed, normalized from 0 to 1 or -1, 1.
-        mass_ratio = 1 means the bridge has no mass, mass_ratio = 0 means the bridge has no hole.
-        stress_ratio = 1 means the bridge has no stress, stress_ratio < 0 means the bridge has exceeded the allowable stress.
-    """
+        mass_ratio = 1 means the bridge has no mass,
+        mass_ratio = 0 means the bridge has no hole.
+        stress_ratio = 1 means the bridge has no stress,
+        stress_ratio < 0 means the bridge has exceeded the allowable stress."""
     max_radius = np.sqrt(length**2 + height**2)
     max_mass = length * height
     gmass_rld = np.tanh(np.array(data['gmass_rld']))
@@ -64,7 +101,7 @@ def observation_space_box(ld_length=10,
                           extra_length=4,
                           low=-1.0,
                           high=1.0):
-    ''' A dictionary representing the observation space from `observe_bridge_update'.
+    """ A dictionary representing the observation space from `observe_bridge_update'.
     
     Arguments:
         ld_length:  integer >= 1, the number of leading dancers.
@@ -76,8 +113,7 @@ def observation_space_box(ld_length=10,
         E.g. With gmass_rld shape (10), points_ld shape (10, 2),
              and extra values mass, stress, mass_ratio, stress_ratio,
              we have ld_length = 10, ld_count = 3, and extra_length = 4
-             for an output Box shape (34,).
-    '''
+             for an output Box shape (34,)."""
     return Box(low=low, high=high, shape=(ld_length * ld_count + extra_length,))
 
 
@@ -147,8 +183,7 @@ class BHDEnv(gym.Env):
             done (boolean): whether the episode has ended, in which case further
                 step() calls will return undefined results.
                 True if observation['stress'] >= allowable_stress.
-            info (dict): Empty dict; to be used for debugging and logging info.
-                         
+            info (dict): Empty dict; to be used for debugging and logging info.         
         """
         rld = self.bridge.rld
         data = self.bridge.update(rld + action)
@@ -161,8 +196,7 @@ class BHDEnv(gym.Env):
 
     def reset(self, bridge=None):
         """Resets the state of the environment and returns an initial observation.
-        Returns: observation (array): the initial observation of the space.
-        """
+        Returns: observation (array): the initial observation of the space."""
         self.bridge = bridge
         if self.bridge is None:
             self.bridge = BridgeHoleDesign()
@@ -184,7 +218,6 @@ class BHDEnv(gym.Env):
           terminal-style text representation.
         
         Arguments:
-            mode (str): the mode to render with
-        """
+            mode (str): the mode to render with."""
         raise NotImplementedError
 

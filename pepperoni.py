@@ -1,5 +1,4 @@
-"""Circle-packing related utilities.
-"""
+"""Circle-packing related utilities."""
 
 import math
 import random
@@ -27,37 +26,27 @@ class BridgeHoleDesign:
     area = []  # float, the area of the hole
     mass = []  # float, the mass of the bridge, density is 1
     gmass_r = []  # list of float, the gradient of mass resprect to all radii
-    gmass_rld = [
-    ]  # list of float, the gradient of mass repsect ot leading dancers
+    gmass_rld = []  # list of float, the gradient of mass repsect ot leading dancers
     angles_ld = []  # list of float, the surround angles of leading dancers
-    angles_accb = [
-    ]  # list of float, the surround angles of accompanying boundary dancers
+    angles_accb = []  # list of float, the surround angles of accompanying boundary dancers
     angles_cb = []  # list of float, the surround angles of boundary circles
     total_length_ld = []  # float, the total edge length of leading dancers
-    total_length_accb = [
-    ]  # float, the total edge length of accompanying boundary dancers
+    total_length_accb = []  # float, the total edge length of accompanying boundary dancers
     total_length_cb = []  # float, the total edge length of boundary circles
     edges_ld = []  # list of float, the edge list of leading dancers
-    edges_accb = [
-    ]  # list of float, the edge list of accompanying boundary dancers
+    edges_accb = []  # list of float, the edge list of accompanying boundary dancers
     edges_cb = []  # list of float, the edge list of boundary circles
-    positions_ld = [
-    ]  # nX2 array, the x and y coordinates of center of leading dancers
-    positions_accb = [
-    ]  # nX2 array, the x and y coordinates of center of accompanying boundary dancers
-    positions_ci = [
-    ]  # nX2 array, the x and y coordinates of center of interior circles
-    positions_cb = [
-    ]  # nX2 array, the x and y coordinates of center of boundary circles
-    positions_all = [
-    ]  # nX2 array, the x and y coordinates of center of all circles
+    positions_ld = []  # nX2 array, the x and y coordinates of center of leading dancers
+    positions_accb = []  # nX2 array, the x and y coordinates of center of accompanying boundary dancers
+    positions_ci = []  # nX2 array, the x and y coordinates of center of interior circles
+    positions_cb = []  # nX2 array, the x and y coordinates of center of boundary circles
+    positions_all = []  # nX2 array, the x and y coordinates of center of all circles
     _tri = []  # Delaunay, a triangluation instance
     _circles = []  # list of _CircleVertex, recording information of all circles
     _halfedges = []  # list of _HalfEdge, the halfedges in the triangulation
     _faces = []  # list of _Face, the faces in the triangulation
     _LD = []  # list of CircleVertex, collection of leading dancers
-    _AccB = [
-    ]  # list of CircleVertex, collection of accompanying boundary dancers
+    _AccB = []  # list of CircleVertex, collection of accompanying boundary dancers
     _ci = []  # list of CircleVertex, collection of interior circles
     _AD = []  # list of CircleVertex, collection of accompanying dancers
     _cb = []  # list of CircleVertex, collection of boundary circles
@@ -713,12 +702,10 @@ def _calculate_radii(circles, eps, delta_r, leavingout=[]):
         for i in range(0, n_c):
             if theta_diff[i] < 0:
                 if circles[i].index != leavingout.index:
-                    circles[
-                        i].radius = circles[i].radius - delta_r * circles[i].radius
+                    circles[i].radius = circles[i].radius - delta_r * circles[i].radius
             elif theta_diff[i] > 0:
                 if circles[i].index != leavingout.index:
-                    circles[
-                        i].radius = circles[i].radius + delta_r * circles[i].radius
+                    circles[i].radius = circles[i].radius + delta_r * circles[i].radius
         for i in range(0, n_c):
             if circles[i].index != leavingout.index:
                 theta_diff[i] = _theta_arround(

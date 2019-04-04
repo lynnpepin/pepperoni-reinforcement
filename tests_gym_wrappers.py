@@ -1,7 +1,4 @@
-"""tests_reinforcement_utils.py
-
-Unit tests for reinforcement_utils.py.
-"""
+"""tests_gym_wrappers.py"""
 
 import unittest
 import numpy as np
