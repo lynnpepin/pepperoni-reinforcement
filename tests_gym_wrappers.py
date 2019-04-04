@@ -21,13 +21,15 @@ class UtilsTests(unittest.TestCase):
     
     def tearDown(self):
         pass
-    
+
     def test_observe_bridge_update(self):
         # Make sure preprocess_update is an array of the correct shape
         bridge = BridgeHoleDesign()
         data = bridge.update(bridge.rld)
         obs = observe_bridge_update(data, length = bridge.l, height = bridge.h, allowable_stress=200.0)
+        ld_length = 10
         
+        self.assertEqual(ld_length, len(bridge.rld))
         self.assertTrue(isinstance(obs, np.ndarray))
         self.assertTrue(obs.shape == (4 + 3*ld_length,))
         # points is (ld_length * 2), gmass_rld is ld_length
@@ -74,13 +76,14 @@ class UtilsTests(unittest.TestCase):
             e = 0.001*np.random.rand(len(rld))
             data = bridge.update(rld + e)
             obs = observe_bridge_update(data, length = bridge.l, height = bridge.h, allowable_stress=200.0)
+            self.assertTrue(ob_space.shape == obs.shape)
             self.assertTrue(ob_space.contains(obs))
         
         # Finally, random numpy vectors should be inside the space
         
         for ii in range(10):
             print(ii)
-            random_vec = 2*(np.random.rand(ld_length) - .5)
+            random_vec = 2*(np.random.rand(3*ld_length + 4) - .5)
             self.assertTrue(ob_space.contains(random_vec))
         
         '''
@@ -110,9 +113,6 @@ class UtilsTests(unittest.TestCase):
         bridge_env = BHDEnv(bridge=None, length = 20, height = 10, allowable_stress = 200.0)
         bridge_env.seed(123456789)
         ob = bridge_env.reset()
-
-    def test_BHDEnv_keys(self):
-        bridge_env = BHDEnv(bridge=None, length = 20, height = 10, allowable_stress = 200.0)
     
     def test_BHDEnv_trial(self):
         bridge_env = BHDEnv(bridge=None, length = 20, height = 10, allowable_stress = 200.0)
@@ -132,17 +132,15 @@ class UtilsTests(unittest.TestCase):
             del_rld = 0.001 * 2*(np.random.rand(len(rld)) - .5)
             ob, reward, done, info = bridge_env.step(del_rld)
         
+        '''Deprecated dict tests
         # Make sure each key is in the dict
         keys = ['mass', 'stress', 'gmass_rld', 'points_ld', 'mass_ratio', 'stress_ratio']
         for key in keys:
             self.assertTrue(key in ob.keys())
-        
+        '''
         ob = bridge_env.reset()
         # Resetting bridge_env after step means rld should be the same)
         self.assertTrue(bridge_env.bridge.rld == rld)
-        for key in keys:
-            self.assertTrue(key in ob.keys())
-        
         bridge_env.seed(612)
         bridge_env.seed(413)
         bridge_env.seed(1025)
