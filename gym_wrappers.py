@@ -2,12 +2,13 @@
 # pep-observation-space
 # BHDEnv
 
+import numpy as np
+import gym
+from gym.spaces import Box, Dict
+from collections import OrderedDict
 from pepperoni import BridgeHoleDesign
 from reinforcement_utils import _normalize_01, _normalize_angle
-import numpy as np
-from gym.spaces import Box, Dict
-import gym
-from collections import OrderedDict
+
 
 def observe_bridge_update(data, length = 20.0, height = 10.0, allowable_stress=200.0, as_dict = False):
     """Preprocess data and provide as an observation (dict of np array, shape (n,)).
