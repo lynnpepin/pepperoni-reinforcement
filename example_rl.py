@@ -1,3 +1,11 @@
+"""example_rl.py
+
+A really simple example / `test run' of learning with our BHDEnv.
+
+Uses the "continous DQN" DDPG agent.
+
+This should run without errors.
+"""
 # See: https://github.com/keras-rl/keras-rl/blob/master/examples/ddpg_pendulum.py
 
 import numpy as np
@@ -5,7 +13,7 @@ import gym
 from gym_wrappers import BHDEnv
 from keras import Model
 from keras.models import Sequential
-from keras.layers import Dense, Activation, Flatten, Input, Concatenate
+from keras.layers import Dense, Activation, Flatten, Input, Concatenate, LeakyReLU
 from keras.optimizers import Adam
 from rl.agents import DDPGAgent
 from rl.memory import SequentialMemory
@@ -26,9 +34,10 @@ input_shape = (1,) + obs.shape
 # Set up neural network for DDPG
 actor = Sequential()
 actor.add(Flatten(input_shape=input_shape))
-actor.add(Dense(16, activation = 'relu'))
-actor.add(Dense(16, activation = 'relu'))
-actor.add(Dense(16, activation = 'relu'))
+actor.add(Dense(64))
+actor.add(LeakyReLU(alpha=0.0625))
+actor.add(Dense(64))
+actor.add(LeakyReLU(alpha=0.0625))
 actor.add(Dense(nb_actions))
 print(actor.summary())
 
