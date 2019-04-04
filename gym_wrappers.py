@@ -34,8 +34,8 @@ def observe_bridge_update(data, length = 20.0, height = 10.0, allowable_stress=2
         allowable_stress:  maximum stress the bridge can take on
     
     Returns:
-        Array of side 4 + 3*ld_length:
-        Output[ 0:10] = gmass_rld
+        Array of size 4 + 3*ld_length:
+        output[ 0:10] = gmass_rld
               [10:30] = points (flattened)
               [30]    = mass                 Always at [-4]
               [31]    = stress               Always at [-3]
@@ -57,7 +57,6 @@ def observe_bridge_update(data, length = 20.0, height = 10.0, allowable_stress=2
     
     if as_dict:
         gym.logger.warn("gym_wrappers.observe_bridge_update as_dict is deprecated and untested.")
-        
         out = OrderedDict()
         out['mass']        = np.array([mass])
         out['stress']      = np.array([stress])
@@ -177,7 +176,7 @@ class BHDEnv(gym.Env):
 
     def reset(self, bridge=None):
         """Resets the state of the environment and returns an initial observation.
-        Returns: observation (object): the initial observation of the space.
+        Returns: observation (array): the initial observation of the space.
         """
         self.bridge = bridge
         if self.bridge is None:
