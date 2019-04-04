@@ -6,11 +6,72 @@ Unit tests for reinforcement_utils.py.
 import unittest
 import numpy as np
 from random import random
-from reinforcement_utils import BridgeState, state_from_update, preprocess_bridge_state, _normalize_01, _normalize_angle
-from gym_wrappers import BHDEnv, observe_bridge_update, observation_space_box
+from gym_wrappers import BHDEnv, observe_bridge_update, observation_space_box, _normalize_01, _normalize_angle
 from pepperoni import BridgeHoleDesign
 from gym.spaces import Box, Dict, Discrete, MultiBinary, MultiDiscrete, Tuple
 from collections import OrderedDict
+
+class PreprocessUtilsTest(unittest.TestCase):
+    # Preproc tests with _normalize_01, _normalize_angle
+    def test_normalize_01_simple(self):
+        """Test some simple cases of 0-1 normalization."""
+        self.assertTrue(isinstance(_normalize_01(7,a=3,b=10), (np.ndarray, int, float)))
+        self.assertAlmostEqual(_normalize_01(3), 3)
+        self.assertAlmostEqual(_normalize_01(2.0), 2.0)
+        self.assertAlmostEqual(_normalize_01(1.0), 1.0)
+        self.assertAlmostEqual(_normalize_01(-3), -3)
+        self.assertAlmostEqual(_normalize_01(-2.0), -2.0)
+        self.assertAlmostEqual(_normalize_01(-1), -1)
+        self.assertAlmostEqual(_normalize_01(0.0), 0.0)
+        self.assertAlmostEqual(_normalize_01(7, b=10), .7)
+        self.assertAlmostEqual(_normalize_01(-2, b=10, a=-10), .4)
+        self.assertAlmostEqual(_normalize_01(.9, a=.5), .8)
+
+    def test_normalize_01_vector(self):
+        """Test that normalizing a vector produces the correct shape."""
+        x = np.array([[-3, 10, 7],[0,-5,15]])
+        np.testing.assert_array_almost_equal(_normalize_01(x, b=15, a=-5),
+                                     np.array([[.1, .75, .6],[.25, 0, 1]]))
+
+    def test_normalize_angle_right_angles(self, iterations=1):
+        # todo - Should have used np testing before...
+        """Test that rig normalizing right angles produces the correct
+        (cos(x),sin(x)) array."""
+        for k in range(-iterations,iterations):
+            np.testing.assert_array_almost_equal(_normalize_angle(((2*k+0)*np.pi)), [1,0])
+            np.testing.assert_array_almost_equal(_normalize_angle(((2*k+.5)*np.pi)), [0,1])
+            np.testing.assert_array_almost_equal(_normalize_angle((2*k+1)*np.pi), [-1,0])
+            np.testing.assert_array_almost_equal(_normalize_angle((2*k+1.5)*np.pi), [0,-1])
+            np.testing.assert_array_almost_equal(_normalize_angle((4*k+0)*90, rad=False), [1,0])
+            np.testing.assert_array_almost_equal(_normalize_angle((4*k+1)*90, rad=False), [0,1])
+            np.testing.assert_array_almost_equal(_normalize_angle((4*k+2)*90, rad=False), [-1,0])
+            np.testing.assert_array_almost_equal(_normalize_angle((4*k+3)*90, rad=False), [0,-1])
+    
+    def test_normalize_random_angles_nparray_and_unit(self, iterations=100):
+        """Loop (default 100 times): Check that a random angle produces an
+        np array of shape (2,) with unit length (1)"""
+        for _ in range(iterations):
+            pair = _normalize_angle(random()*360, rad=(random() >= .5))
+            # We should always get a numpy array from this!
+            self.assertTrue(isinstance(pair, np.ndarray))
+            self.assertEqual(pair.shape, (2,))
+            # And check that they are of length 1.
+            self.assertAlmostEqual(np.linalg.norm(pair), 1)
+            # Test a lot of random values, rad=True/False randomly make sure norm == 1
+    
+    def test_normalize_angle_right_angles_vector(self):
+        """Test that normalize_angle on an nd array returns the appropriate shape."""
+        x = _normalize_angle(np.array([-2*np.pi, -1.5*np.pi, -np.pi, -.5*np.pi,
+                                       0, .5*np.pi, np.pi, 1.5*np.pi, 2*np.pi]))
+        y = np.array([[1,0], [0,1], [-1,0], [0,-1], [1,0],
+                      [0,1], [-1,0], [0,-1], [1,0]])
+        np.testing.assert_array_almost_equal(x, y)
+        
+        x = _normalize_angle(np.array([[0, 90, 180], [270, -90, -180]]),
+                             rad = False)
+        y = np.array([[[1,0], [0,1], [-1,0]],
+                      [[0,-1], [0,-1], [-1,0]]])
+        np.testing.assert_array_almost_equal(x,y)
 
 class UtilsTests(unittest.TestCase):
     """ Test utilities used for the gym_wrapper
@@ -147,7 +208,8 @@ class UtilsTests(unittest.TestCase):
         bridge_env.close()
 
 
-TestCases = [UtilsTests]
+TestCases = [UtilsTests,
+             PreprocessUtilsTest]
 
 def run_tests(TestCaseList):
     for testcase in TestCaseList:

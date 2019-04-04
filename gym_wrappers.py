@@ -7,7 +7,22 @@ import gym
 from gym.spaces import Box, Dict
 from collections import OrderedDict
 from pepperoni import BridgeHoleDesign
-from reinforcement_utils import _normalize_01, _normalize_angle
+
+def _normalize_01(x, b=1.0, a = 0.0):
+    """Normalize x to [0,1] bounds, given max value b and min value a."""
+    # todo: Consider generating warnings if x > b or x < a, or if b <= a
+    # todo: If no b, a, use the max, min of x.
+    return (x-a)/(b-a)
+
+
+def _normalize_angle(x, rad=True):
+    """Given an angle, return the (cos(x), sin(x)) pair represnting it.
+    Given an numpy array of shape (a,b,...,c), returns an array of shape
+    (a,b,...,c,2), where the last value indexes cos or sin."""
+    if not rad:
+        x = x*np.pi/180
+    
+    return np.moveaxis(np.array([np.cos(x), np.sin(x)]), 0, -1)
 
 
 def observe_bridge_update(data, length = 20.0, height = 10.0, allowable_stress=200.0, as_dict = False):
