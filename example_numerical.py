@@ -1,6 +1,10 @@
+"""Example of the numerical methods used in pepperoni and _FEM
+"""
 # -*- coding: utf-8 -*-
 from pepperoni import *
-from FEM import *
+from pepperoni import _generate_circlepacking, _generate_triangulation, _draw_circles
+from _FEM import *
+from _FEM import _theta_around
 
 ############# example of using BridgeHoleDesign class ################
 B = BridgeHoleDesign()
@@ -33,8 +37,7 @@ x_tri = [0, 1, 0];
 y_tri = [0, 0, 1];
 points_tri = np.vstack([x_tri,y_tri]).T 
 tri1 = Delaunay(points_tri)
-rld1, raccb1,ri1, r1, LD1, AccB1, ci1, AD1, circles1, faces1, cb1, anchor_x1, anchor_y1, cb_origin1 = _generate_circlepacking(tri1, 
-                                     0.5, 0.1*eps, 0.1*delta_r)
+rld1, raccb1,ri1, r1, LD1, AccB1, ci1, AD1, circles1, faces1, cb1, anchor_x1, anchor_y1, cb_origin1 = _generate_circlepacking(tri1, 0.5, 0.1*eps, 0.1*delta_r)
 print('radii of circles1')
 print('r1 ', 'Exact Values ', 1-1/np.sqrt(2), ' Calculated ', circles1[0].radius )
 print('r2 ', 'Exact Values ', 1/np.sqrt(2), ' Calculated ', circles1[1].radius )
