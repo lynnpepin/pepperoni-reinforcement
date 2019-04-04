@@ -1,18 +1,13 @@
-# pep-action-space
-# pep-observation-space
-# BHDEnv
-
 import numpy as np
 import gym
 from gym.spaces import Box, Dict
 from collections import OrderedDict
 from pepperoni import BridgeHoleDesign
 
-def _normalize_01(x, b=1.0, a = 0.0):
+
+def _normalize_01(x, b=1.0, a=0.0):
     """Normalize x to [0,1] bounds, given max value b and min value a."""
-    # todo: Consider generating warnings if x > b or x < a, or if b <= a
-    # todo: If no b, a, use the max, min of x.
-    return (x-a)/(b-a)
+    return (x - a) / (b - a)
 
 
 def _normalize_angle(x, rad=True):
@@ -20,12 +15,15 @@ def _normalize_angle(x, rad=True):
     Given an numpy array of shape (a,b,...,c), returns an array of shape
     (a,b,...,c,2), where the last value indexes cos or sin."""
     if not rad:
-        x = x*np.pi/180
-    
+        x = x * np.pi / 180
+
     return np.moveaxis(np.array([np.cos(x), np.sin(x)]), 0, -1)
 
 
-def observe_bridge_update(data, length = 20.0, height = 10.0, allowable_stress=200.0):
+def observe_bridge_update(data,
+                          length=20.0,
+                          height=10.0,
+                          allowable_stress=200.0):
     """Preprocess data and provide as an observation (dict of np array, shape (n,)).
     
     Arguments:
@@ -46,22 +44,26 @@ def observe_bridge_update(data, length = 20.0, height = 10.0, allowable_stress=2
         stress_ratio = 1 means the bridge has no stress, stress_ratio < 0 means the bridge has exceeded the allowable stress.
     """
     max_radius = np.sqrt(length**2 + height**2)
-    max_mass   = length*height
+    max_mass = length * height
     gmass_rld = np.tanh(np.array(data['gmass_rld']))
-    points_ld = _normalize_01(np.array(data['geometry_info']['positions_ld']),
-                              b = max_radius)
-    mass = _normalize_01(data['mass'], b = max_mass)
-    stress = _normalize_01(data['sigma'], b = allowable_stress)
-    mass_ratio = (max_mass - data['mass'])/max_mass
-    stress_ratio = (allowable_stress - data['sigma'])/allowable_stress
+    points_ld = _normalize_01(
+        np.array(data['geometry_info']['positions_ld']), b=max_radius)
+    mass = _normalize_01(data['mass'], b=max_mass)
+    stress = _normalize_01(data['sigma'], b=allowable_stress)
+    mass_ratio = (max_mass - data['mass']) / max_mass
+    stress_ratio = (allowable_stress - data['sigma']) / allowable_stress
 
     out = np.concatenate((gmass_rld, points_ld.reshape(-1),
-                         [mass, stress, mass_ratio, stress_ratio]))
+                          [mass, stress, mass_ratio, stress_ratio]))
 
     return out
 
 
-def observation_space_box(ld_length = 10, ld_count = 3, extra_length = 4, low = -1.0, high = 1.0):
+def observation_space_box(ld_length=10,
+                          ld_count=3,
+                          extra_length=4,
+                          low=-1.0,
+                          high=1.0):
     ''' A dictionary representing the observation space from `observe_bridge_update'.
     
     Arguments:
@@ -76,7 +78,7 @@ def observation_space_box(ld_length = 10, ld_count = 3, extra_length = 4, low = 
              we have ld_length = 10, ld_count = 3, and extra_length = 4
              for an output Box shape (34,).
     '''
-    return Box(low = low, high = high, shape = (ld_length * ld_count + extra_length, ))
+    return Box(low=low, high=high, shape=(ld_length * ld_count + extra_length,))
 
 
 class BHDEnv(gym.Env):
@@ -97,32 +99,37 @@ class BHDEnv(gym.Env):
         close:  Automatically run when garbage collection / exit.
         seed:  Set the seed for the environment's RNG/RNGs. Returns list of seed history.
     """
-    
-    def __init__(self, bridge = None,
-                       length = 20.0,
-                       height = 10.0,
-                       allowable_stress = 200.0):
-        
+
+    def __init__(self,
+                 bridge=None,
+                 length=20.0,
+                 height=10.0,
+                 allowable_stress=200.0):
+
         self.__version__ = "0.1.0"
-        
+
         # Set up bridge values
         self.length = length
         self.height = height
         self.allowable_stress = allowable_stress
         self.max_mass = self.length * self.height
         # self.reset sets self.bridge, used later
-        self.reset(bridge = bridge)
+        self.reset(bridge=bridge)
         self.ld_length = len(self.bridge.rld)
         self.max_radius = np.sqrt(self.length**2 + self.height**2)
-        
+
         # Set up values required for Env
         self.reward_range = (0, self.max_mass)
-        self.action_space = gym.spaces.Box(low = 0, high = self.max_radius, shape = (self.ld_length,))
-        self.observation_space = observation_space_box(ld_length = self.ld_length)
+        self.action_space = gym.spaces.Box(
+            low=0, high=self.max_radius, shape=(self.ld_length,))
+        self.observation_space = observation_space_box(ld_length=self.ld_length)
 
-    def _get_ob(self,data):
-        ob = observe_bridge_update(data=data, length = self.length, height = self.height,
-                                   allowable_stress = self.allowable_stress)
+    def _get_ob(self, data):
+        ob = observe_bridge_update(
+            data=data,
+            length=self.length,
+            height=self.height,
+            allowable_stress=self.allowable_stress)
         return ob
 
     def step(self, action):
@@ -149,9 +156,8 @@ class BHDEnv(gym.Env):
         reward = ob[-2]
         done = ob[-1] <= 0
         info = {}
-        
-        return ob, reward, done, info
 
+        return ob, reward, done, info
 
     def reset(self, bridge=None):
         """Resets the state of the environment and returns an initial observation.
@@ -160,11 +166,10 @@ class BHDEnv(gym.Env):
         self.bridge = bridge
         if self.bridge is None:
             self.bridge = BridgeHoleDesign()
-        
+
         data = self.bridge.update(self.bridge.rld)
         ob = self._get_ob(data)
         return ob
-
 
     def render(self, mode='human'):
         """Renders the environment.
@@ -182,5 +187,4 @@ class BHDEnv(gym.Env):
             mode (str): the mode to render with
         """
         raise NotImplementedError
-    
-        
+
