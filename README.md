@@ -12,7 +12,6 @@
  * rl (keras-rl) (https://github.com/keras-rl/keras-rl)
 
 ## Files:
- * **reinforcement_utils.py** : A mostly deprecated wasteland of old code that should be cleaned up, plus some preprocessing functions. Most of this functionality is provided by gym_wrappers now.
  * **gym_wrappers.py** : Provides OpenAI Gym.Env wrapper for BridgeHoleDesign, plus necessary preprocessing functions.
  * **pepperoni.py** : Provides BridgeHoleDesign() environment.
  * **_FEM.py** : Provides finite element method analysis for pepperoni.
