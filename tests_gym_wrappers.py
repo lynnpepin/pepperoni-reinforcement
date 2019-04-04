@@ -96,24 +96,6 @@ class UtilsTests(unittest.TestCase):
         # points is (ld_length * 2), gmass_rld is ld_length
         # + 4 for stress, mass, and the provided stress_ratio, mass_ratio
         
-        '''
-        # For reference, these are old tests for a Dict implementation
-        self.assertTrue(isinstance(obs, OrderedDict))
-        self.assertTrue(isinstance(obs['mass'], np.ndarray))
-        self.assertTrue(isinstance(obs['stress'], np.ndarray))
-        self.assertTrue(obs['mass'].shape == obs['stress'].shape == (1,))
-        self.assertEqual(len(data['gmass_rld']), len(obs['gmass_rld']))
-        self.assertEqual(len(data['geometry_info']['positions_ld']), len(obs['points_ld']))
-        self.assertTrue(isinstance(obs['mass_ratio'], np.ndarray))
-        self.assertTrue(isinstance(obs['stress_ratio'], np.ndarray))
-        self.assertTrue(obs['mass_ratio'].shape == obs['stress_ratio'].shape == (1,))
-        self.assertTrue(0 <= obs['mass'] <= 1)
-        self.assertTrue(0 <= obs['stress'] <= 1)
-        self.assertTrue(0 <= obs['mass_ratio'] <= 1)
-        self.assertTrue(0 <= obs['stress_ratio'] <= 1)
-        '''
-        
-    
     def test_observation_space_Box(self):
         # Make sure the observation space is a box of the correct space
         ld_length = 10
@@ -146,26 +128,7 @@ class UtilsTests(unittest.TestCase):
             print(ii)
             random_vec = 2*(np.random.rand(3*ld_length + 4) - .5)
             self.assertTrue(ob_space.contains(random_vec))
-        
-        '''
-        ld_length = 10
-        ob_space = observation_space_dict(ld_length = ld_length)
-        somefloat = np.array([.55])
-        somevec = np.random.rand(ld_length) - .5
-        somepoints = np.random.rand(ld_length,2)
-        # For reference, the old tests for a Dict implementation
-        # It should be a Dict space
-        self.assertTrue(isinstance(ob_space, Dict))
-        # Test each space
-        self.assertTrue(ob_space.spaces['mass'].contains(somefloat))
-        self.assertTrue(ob_space.spaces['stress'].contains(somefloat))
-        self.assertTrue(ob_space.spaces['mass_ratio'].contains(somefloat))
-        self.assertTrue(ob_space.spaces['stress_ratio'].contains(somefloat))
-        self.assertTrue(ob_space.spaces['gmass_rld'].contains(somevec))
-        self.assertTrue(ob_space.spaces['points_ld'].contains(somepoints))
-        
-        # The observation should be inside its space!
-        '''
+
 
     def test_BHDEnv_init(self):
         bridge_env = BHDEnv(bridge=None, length = 20, height = 10, allowable_stress = 200.0)
@@ -192,13 +155,7 @@ class UtilsTests(unittest.TestCase):
             rld = bridge_env.bridge.rld 
             del_rld = 0.001 * 2*(np.random.rand(len(rld)) - .5)
             ob, reward, done, info = bridge_env.step(del_rld)
-        
-        '''Deprecated dict tests
-        # Make sure each key is in the dict
-        keys = ['mass', 'stress', 'gmass_rld', 'points_ld', 'mass_ratio', 'stress_ratio']
-        for key in keys:
-            self.assertTrue(key in ob.keys())
-        '''
+
         ob = bridge_env.reset()
         # Resetting bridge_env after step means rld should be the same)
         self.assertTrue(bridge_env.bridge.rld == rld)

@@ -25,7 +25,7 @@ def _normalize_angle(x, rad=True):
     return np.moveaxis(np.array([np.cos(x), np.sin(x)]), 0, -1)
 
 
-def observe_bridge_update(data, length = 20.0, height = 10.0, allowable_stress=200.0, as_dict = False):
+def observe_bridge_update(data, length = 20.0, height = 10.0, allowable_stress=200.0):
     """Preprocess data and provide as an observation (dict of np array, shape (n,)).
     
     Arguments:
@@ -54,24 +54,14 @@ def observe_bridge_update(data, length = 20.0, height = 10.0, allowable_stress=2
     stress = _normalize_01(data['sigma'], b = allowable_stress)
     mass_ratio = (max_mass - data['mass'])/max_mass
     stress_ratio = (allowable_stress - data['sigma'])/allowable_stress
-    
-    if as_dict:
-        gym.logger.warn("gym_wrappers.observe_bridge_update as_dict is deprecated and untested.")
-        out = OrderedDict()
-        out['mass']        = np.array([mass])
-        out['stress']      = np.array([stress])
-        out['gmass_rld']   = gmass_rld
-        out['points_ld']   = points_ld
-        out['mass_ratio']  = np.array([mass_ratio])
-        out['stress_ratio']= np.array([stress_ratio])
-    else:
-        out = np.concatenate((gmass_rld, points_ld.reshape(-1),
-                             [mass, stress, mass_ratio, stress_ratio]))
-    
+
+    out = np.concatenate((gmass_rld, points_ld.reshape(-1),
+                         [mass, stress, mass_ratio, stress_ratio]))
+
     return out
 
 
-def observation_space_box(ld_length = 10, ld_count = 3, extra_length = 4, low = -1.0, high = 1.0, as_dict = False):
+def observation_space_box(ld_length = 10, ld_count = 3, extra_length = 4, low = -1.0, high = 1.0):
     ''' A dictionary representing the observation space from `observe_bridge_update'.
     
     Arguments:
@@ -86,18 +76,7 @@ def observation_space_box(ld_length = 10, ld_count = 3, extra_length = 4, low = 
              we have ld_length = 10, ld_count = 3, and extra_length = 4
              for an output Box shape (34,).
     '''
-    if as_dict:
-        gym.logger.warn("gym_wrappers.observe_bridge_update as_dict is deprecated and untested.")
-        out = { 'mass' : Box(low = 0.0, high = 1.0, shape = [1]),
-                'stress' : Box(low = 0.0, high = 1.0, shape = [1]),
-                'points_ld' : Box(low = 0.0, high = 1.0, shape = [ld_length, 2]),
-                'gmass_rld' : Box(low = -1, high = 1, shape = [ld_length]),
-                'mass_ratio' : Box(low = 0.0, high = 1.0, shape = [1]),
-                'stress_ratio' : Box(low = 0.0, high = 1.0, shape = [1]),
-              }
-        return Dict(out)
-    else:
-        return Box(low = low, high = high, shape = (ld_length * ld_count + extra_length, ))
+    return Box(low = low, high = high, shape = (ld_length * ld_count + extra_length, ))
 
 
 class BHDEnv(gym.Env):
