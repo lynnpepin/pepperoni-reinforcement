@@ -44,6 +44,7 @@ The [DDPG algorithm](https://arxiv.org/pdf/1509.02971v2.pdf) is chosen as the co
  * rl (keras-rl) (https://github.com/keras-rl/keras-rl)
 
 ## Files:
+ * **example_rl.py** : Our example of the reinforcement learning agent in work.
  * **gym_wrappers.py** : Provides OpenAI Gym.Env wrapper for BridgeHoleDesign, plus necessary preprocessing functions.
  * **pepperoni.py** : Provides BridgeHoleDesign() environment.
  * **_FEM.py** : Provides finite element method analysis for pepperoni.
