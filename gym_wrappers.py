@@ -196,7 +196,11 @@ class BHDEnv(gym.Env):
         #          dancers starts to output NaN for unknown reasons!
         done = False
         
-        if ob[-1] <= 0 or np.isnan(ob[-1]):
+        if reward <= 0 or np.isnan(reward):
+            reward = 0
+            done = True
+        
+        elif ob[-1] <= 0 or np.isnan(ob[-1]):
             reward = 0
             done = True
         

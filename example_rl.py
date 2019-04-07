@@ -83,9 +83,9 @@ agent.compile(Adam(lr=.001, clipnorm=1.), metrics=['mae'])
 # nb_steps = number of training steps to be performed.
 # No idea what the difference between the two are tbh!
 # See: https://github.com/keras-rl/keras-rl/blob/master/rl/core.py
-agent.fit(env, nb_steps=50, visualize=False, verbose=1, nb_max_episode_steps=50)
+agent.fit(env, nb_steps=1000, visualize=False, verbose=1, nb_max_episode_steps=1000)
 
 # Post-training
 agent.save_weights('ddpg_example-rl_weights.h5f', overwrite=True)
-agent.test(env, nb_episodes=1, visualize=False, nb_max_episode_steps=2)
+agent.test(env, nb_episodes=5, visualize=False, nb_max_episode_steps=1000)
 
