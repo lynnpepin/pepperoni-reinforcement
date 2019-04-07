@@ -29,7 +29,7 @@ ld_length = env.action_space.shape[0]
 nb_actions = ld_length
 input_shape = (1,) + obs.shape
 
-# Set up neural network for DDPG
+# Set up neural networks required for DDPG, i.e. continuous-space DQN
 actor = Sequential()
 actor.add(Flatten(input_shape=input_shape))
 actor.add(Dense(64))
@@ -43,31 +43,47 @@ action_input = Input(shape=(nb_actions,), name='action_input')
 observation_input = Input(shape=input_shape, name='observation_input')
 flattened_observation = Flatten()(observation_input)
 x = Concatenate()([action_input, flattened_observation])
-x = Dense(32, activation='relu')(x)
-x = Dense(32, activation='relu')(x)
-x = Dense(32, activation='relu')(x)
+x = Dense(128, activation='relu')(x)
+x = Dense(128, activation='relu')(x)
+x = Dense(128, activation='relu')(x)
 x = Dense(1)(x)
 critic = Model(inputs=[action_input, observation_input], outputs=x)
 print(critic.summary())
 
-# Compile and fit agent.
-memory = SequentialMemory(limit=100, window_length=1)
+# Compile and fit agent:
+memory = SequentialMemory(limit=10, window_length=1)
+
+# OrnsteinUhlen process is a type of random walk. Explore the space R^size
+# Each step:
+# x += x_prev + theta*(mu-x_prev)*dt + current_sigma*sqrt(dt)*Normal(in R^size)
+#   theta: strength of attraction to return to cnter
 random_process = OrnsteinUhlenbeckProcess(
     size=nb_actions, theta=.15, mu=0., sigma=.3)
+
+# DDPGAgent:
+#   Only 1 warm-up step before starting to train actor and critic.
+#       Agent should be able to immediately start moving towards an ideal solution!
+#   target_model_update = .001. Smooth averaging coefficient.
+#       See: https://rubenfiszel.github.io/posts/rl4j/2016-08-24-Reinforcement-Learning-and-DQN.html
+#   
 agent = DDPGAgent(
     nb_actions=nb_actions,
     actor=actor,
-    nb_steps_warmup_actor=100,
+    nb_steps_warmup_actor=1,
     critic=critic,
     critic_action_input=action_input,
-    nb_steps_warmup_critic=100,
+    nb_steps_warmup_critic=1,
     memory=memory,
     random_process=random_process,
     gamma=.99,
-    target_model_update=1e-3)
+    target_model_update=.001)
 agent.compile(Adam(lr=.001, clipnorm=1.), metrics=['mae'])
 
-agent.fit(env, nb_steps=3, visualize=False, verbose=1, nb_max_episode_steps=2)
+# nb_max_episode_steps = max steps per episode before resetting
+# nb_steps = number of training steps to be performed.
+# No idea what the difference between the two are tbh!
+# See: https://github.com/keras-rl/keras-rl/blob/master/rl/core.py
+agent.fit(env, nb_steps=50, visualize=False, verbose=1, nb_max_episode_steps=50)
 
 # Post-training
 agent.save_weights('ddpg_example-rl_weights.h5f', overwrite=True)

@@ -186,10 +186,20 @@ class BHDEnv(gym.Env):
             info (dict): Empty dict; to be used for debugging and logging info.         
         """
         rld = self.bridge.rld
+        new_rld = rld + action
+        new_rld[new_rld < 0] = 0 # replace negative values with 0
         data = self.bridge.update(rld + action)
         ob = self._get_ob(data)
         reward = ob[-2]
-        done = ob[-1] <= 0
+        
+        # Problem: Positions_ld, mass, gmass_ld, total_length, etc. associated with leading
+        #          dancers starts to output NaN for unknown reasons!
+        done = False
+        
+        if ob[-1] <= 0 or np.isnan(ob[-1]):
+            reward = 0
+            done = True
+        
         info = {}
 
         return ob, reward, done, info
