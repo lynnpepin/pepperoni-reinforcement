@@ -197,10 +197,12 @@ class BHDEnv(gym.Env):
         done = False
         
         if reward <= 0 or np.isnan(reward):
+            print("Reward is ", reward)
             reward = 0
             done = True
         
         elif ob[-1] <= 0 or np.isnan(ob[-1]):
+            print("Stress ratio is", ob[-1])
             reward = 0
             done = True
         
