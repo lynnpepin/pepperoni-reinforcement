@@ -2,9 +2,9 @@
 
 A really simple example / `test run' of learning with our BHDEnv.
 Uses the "continous DQN" DDPG agent.
-This should run without errors.
+Ideally, this should run without errors. But right now, it doesn't. See README.
 
-See: https://github.com/keras-rl/keras-rl/blob/master/examples/ddpg_pendulum.py
+Code shamelessly adapted from example: https://github.com/keras-rl/keras-rl/blob/master/examples/ddpg_pendulum.py
 """
 
 import numpy as np
@@ -61,7 +61,7 @@ random_process = OrnsteinUhlenbeckProcess(
     size=nb_actions, theta=.15, mu=0., sigma=.3)
 
 # DDPGAgent:
-#   Only 1 warm-up step before starting to train actor and critic.
+#   Only few warm-up steps before starting to train actor and critic.
 #       Agent should be able to immediately start moving towards an ideal solution!
 #   target_model_update = .01. Smooth averaging coefficient.
 #       See: https://rubenfiszel.github.io/posts/rl4j/2016-08-24-Reinforcement-Learning-and-DQN.html
