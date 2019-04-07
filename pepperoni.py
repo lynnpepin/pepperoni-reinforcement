@@ -189,7 +189,7 @@ def _finite_element_analysis(edges, nely, nelx, l, h):
            e[2] > h - 1 * eps_y or \
            edges[-1][3] > l - 1 * eps_x or \
            edges[-1][4] > h - 1.2 * eps_y:
-            sigma = np.inf
+            sigma = 10**10
             area = l * h
             return sigma, area        
     sigma, area = _FEM(edges, nely, nelx, False)
