@@ -12,6 +12,20 @@ from scipy.sparse import coo_matrix
 
 
 def _ccw(ax, ay, bx, by, cx, cy):
+    """
+    Determine wheter three points, a, b, and c are ordered in counter-clockwise(ccw) way
+    
+    # Arguments:
+    ax: float, the x coordinate of point a
+    ay: float, the y coordinate of point a
+    bx: float, the x coordinate of point b
+    by: float, the y coordinate of point b
+    cx: float, the x coordinate of point c
+    cy: float, the y coordinate of point c
+    
+    # Returns:
+    Bool: True if point a, b, and c are ordered in in ccw way
+    """
     if np.linalg.det([[ax, bx, cx], [ay, by, cy], [1, 1, 1]]) > 0:
         return True
     else:
@@ -19,6 +33,21 @@ def _ccw(ax, ay, bx, by, cx, cy):
 
 
 def _membershiptest(px, py, Edges, nely, nelx):
+    """
+    Test whether the point p is insider the region of the hole. If p is inside the hole region,
+    return True.
+    
+    # Arguments:
+    px: float, the x coordinate of point p
+    py: float, the y coordinate of point p
+    Edges: nx5 float array, the edge set. In each row, [1,x1,y1,x2,y2] where 1 denotes the edge is a line segment, x1, y1, x2
+    and y2 are the coordinates of the end points of the edge.
+    nely: int, number of elements in y direction
+    nelx: int, number of elements in x dirction
+    
+    # Returns:
+    Bool: True is p is inside the hole regin
+    """
     size_edges = np.size(Edges, axis=0)
     number_edges = size_edges
     crossNumber = 0
