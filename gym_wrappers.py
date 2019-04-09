@@ -187,8 +187,9 @@ class BHDEnv(gym.Env):
         """
         rld = self.bridge.rld
         new_rld = rld + action
-        # TODO - Arbitrary constant; 2**-14
-        new_rld[new_rld < 2**-14] = 2**-14   # replace negative values with 0
+        
+        # TODO - Temporary measure to prevent NaN
+        new_rld[new_rld < 2**-14] = 2**-14   # replace negative values with near-zero
         data = self.bridge.update(new_rld)
         ob = self._get_ob(data)
         reward = ob[-2]

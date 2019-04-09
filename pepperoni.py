@@ -187,7 +187,8 @@ def _finite_element_analysis(edges, nely, nelx, l, h):
     
     if edges[-1][3] > l - 1 * eps_x or \
        edges[-1][4] > h - 1 * eps_y:
-        # TODO - sigma = np.inf ideal
+        # TODO - sigma = np.inf is ideal.
+        # sigma = 2**16 - 1 is a temporary measure to prevent NaN
         sigma = 2**16 - 1
         area = l * h
         return sigma, area

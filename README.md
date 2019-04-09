@@ -26,7 +26,7 @@ See `example_rl.py` for the most pertinent code. In `gym_wrappers.py`, we utiliz
 The [DDPG algorithm](https://arxiv.org/pdf/1509.02971v2.pdf) is chosen as the continous analogue to DQNs.
 
 ### To be done:
- * Big blocker: Numerical issues in code resulting in NaN values.
+ * Big blocker: Numerical issues in code resulting in NaN values. Temporary fixes have been made, so the code now runs.
  * Transfer learning: Train the agent first in a much-faster gradient-descent environment, then fine-tune it on the slow, bridge-design environment.
  * Optimize code, analyze using `cProfile`.
  * Enable in-training visualization plus results-generating code.
