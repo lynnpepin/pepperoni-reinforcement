@@ -18,10 +18,10 @@ class BridgeHoleDesign:
     delta_r = 0.001  # the changes in each iteration in the process of calculation
     nely = 10  # the number of elements in y direction for FEM
     nelx = 20  # the number of elements in x direction for FEM
-    ri = []  # List of float, the radii of interior circles
-    raccb = []  # List of float, the radii of accompanying boundary circles
-    rld = []  # List of float, the radii of leading dancers
-    r = []  # List of float, the radii of all circles
+    ri = []  # List of float > 0, the radii of interior circles
+    raccb = []  # List of float > 0, the radii of accompanying boundary circles
+    rld = []  # List of float > 0, the radii of leading dancers
+    r = []  # List of float > 0, the radii of all circles
     sigma = []  # float, the maximum stress in the bridge under the loads
     area = []  # float, the area of the hole
     mass = []  # float, the mass of the bridge, density is 1
@@ -98,8 +98,10 @@ class BridgeHoleDesign:
 
     def update(self, rld_new):
         """
+        To update circle packing with a new radii list for leading dancers
         # Arguments:
-            rld_new: list of float, a new radii list of leading dancers
+            rld_new: list of float > 0, a new radii list of leading dancers. Note that rld_new is recommened to be larger than 
+            the precision self.eps.
             
         # Returns:
             self.r: list of float, the updated radii list of all circles
@@ -180,7 +182,18 @@ class BridgeHoleDesign:
 def _finite_element_analysis(edges, nely, nelx, l, h):
     """
     If there are parts of edges exceeding the design domain, return infinity 
-    for stress
+    for stress, else calls _FEM 
+    
+    # Arguments:
+    edges: nx5 float arrary. The line segments of the part of hole under designing
+    nely: int, number of elements in y direction
+    nelx: int, number of elements in x direction
+    l: float, the length of the rectangle design domain
+    h: float, the height of the rectangle design domain
+    
+    # Returns:
+    sigma: float, the maximal stress of the bridge under loading
+    area: float, the area of the bridge
     """
     eps_x = l / nelx
     eps_y = h / nely
@@ -274,6 +287,15 @@ def _get_area_of_all(faces):
 
 
 def _get_surround_angles(Cir):
+    """
+    Get the surround angles of a set of circles
+    
+    # Arguments:
+    Cir: _CircleVertex array, the circle set
+    
+    # Returns:
+    ang: float array, the array of the surround angle of the given circles
+    """
     ang = [0] * len(Cir)
     for i in range(0, len(Cir)):
         ang[i] = _theta_arround(Cir[i])
@@ -281,6 +303,18 @@ def _get_surround_angles(Cir):
 
 
 def _get_edge_length(Cir, closed):
+    """
+    Get the total length of the part of boundary linking by a set of circles and the lengths of the
+    segments on the part boudnary
+    
+    # Arguments: 
+    Cir: _CircleVertex array, the set of circles on the boundary
+    closed: Bool, denote whether the set of circles are linked into a closed curve
+    
+    # Returns:
+    total: float, the total length of the part of boundary
+    edge_list: float array, the lengths of the segments linked between the circles 
+    """
     edge_list = [0] * (len(Cir) - 1)
     total = 0
     for i in range(0, len(Cir) - 1):
@@ -293,6 +327,16 @@ def _get_edge_length(Cir, closed):
 
 
 def _get_positions(Cir):
+    """
+    Get the positions of a set of circles
+    
+    # Arguments:
+    Cir: _CircleVertex array, the circle set
+    
+    # Returns:
+    p: float array, nx[x,y], n is the number of circles. x and y are the coordinates
+    of the centers of the circles
+    """
     p = np.zeros((len(Cir), 2))
     for i in range(0, len(Cir)):
         p[i][0] = Cir[i].x
@@ -303,10 +347,9 @@ def _get_positions(Cir):
 class _CircleVertex:
     """ The data structure for the circles in circle packing.
 
-    TODO - Update explanation, add properties, example.
     # Properties
         index: int, the index of the circle in the circle packing
-        radius: float, the radius of the circle
+        radius: float > 0, the radius of the circle
         totall_angle: float, the surround angle of the circle
         x: float, the x coordinate of the circle
         y: float, the y coordinate of the circle
@@ -334,15 +377,21 @@ class _CircleVertex:
 
 
 class _HalfEdge:
-    """TODO - Add explanation, properties, example.
-    
+    """
+    The data structure of the halfedge linked by two adjacent circles
     # Properties
         source: _CircleVertex
         target: _CircleVertex
         face_index: int, the index of face where the halfedge residents
+        flip: _HalfEdge, the corresponding halfedge when flip the current halfedge
+        next: _HalfEdge, the next halfedge of the current halfedge
+        prev: _HalfEdge, the previous halfedge of the current halfedge
 
     # Example
-    e is an instance of _HalfEdge. e:= e.source -> e.target
+    e = _HalfEdge(c1,c2,1)
+    e.source = c1
+    e.target = c2
+    e.flip = _HalfEdge(c2,c1,2)
     """
     flip = []  # the corresponding halfedge when flip self
     next = []  # the next halfedge
@@ -355,18 +404,19 @@ class _HalfEdge:
 
 
 class _Face:
-    """TODO - ADd explanation, properties, example.
+    """
     a face consits of three vertices and three halfedges that linking the vertices
     # Properties
-       index: the index of the face in a faces list
-       vertex1: 
-       vertex2
-       vertex3
-       halfedge1
-       halfedge2
-       halfedge3
+       index: int, the index of the face in the faces list
+       vertex1: _CircleVertex, the number 1 circle in the face
+       vertex2: _CircleVertex, the number 2 circle in the face
+       vertex3: _CircleVertex, the number 3 circle in the face
+       halfedge1: _HalfEdge, the halfedge linking vertex1 and vertex2
+       halfedge2: _HalfEdge, the halfedge linking vertex2 and vertex3
+       halfedge3: _HalfEdge, the halfedge linking vertex3 and vertex1
 
     # Example
+        f = _Face(c1,c2,c3,1)
     """
 
     def __init__(self, v1=[], v2=[], v3=[], i=[]):
@@ -399,7 +449,8 @@ def _in_circles(c, Cir):
         Bool
 
     # Example
-        TODO - Add example
+        True == _in_circles(c1,[c1,c2,c3])
+        False == _in_circles(c5,[c1,c2,c3])
     """
     for ci in Cir:
         if c.index == ci.index:
@@ -410,18 +461,17 @@ def _in_circles(c, Cir):
 
 def _theta_arround(cv):
     """Calculate the surround angle of a circle vertex cv
-
-    TODO - Explain 'surround angle', add useful example.
-
+    
     # Arguments
         cv: Instance of _CircleVertex
 
     # Returns
-        Float, the surround angle of cv. 
+        theta, Float, the surround angle of cv. 
 
     # Example
-        TODO - This example does not work. What is c?
-        e.g. thera_arround(c) -> 3.14
+        c = _CircleVertex(1,1,0,0,0)
+        theta = _theta_arround(c)
+        If c is an interior in a circle packing, theta should be 2*pi
 
     """
     r = cv.radius
@@ -450,18 +500,15 @@ def _generate_triangulation(l, h, a_ell, b_ell, delta):
     discrete the elliptical hole with uniformed points in delta distance
     genetate the triangulation of these discrete points
 
-    # TODO - Values, default values.
-
     # Arguments
-        l: the half length of the bridge
-        h: the height of the bridge
-        a_ell, b_ell, the  parameters of ellipse, x^2/a_ell^2 + y^2/b_ell^2 = 1
-        delta: the distance of the discrete points in the domain
+        l: float, the half length of the bridge, the deflaut value is 20
+        h: float, the height of the bridge, the deflaut value is 10
+        a_ell, b_ell: float the  parameters of ellipse, x^2/a_ell^2 + y^2/b_ell^2 = 1
+            the deflaut value of a_ell is 18, the deflaut value of b_ell is 8
+        delta: float, the distance of the discrete points in the domain, the deflaut value is 1
 
     # Returns
         tri: Instance of Triangulation
-
-    # Example
     """
     # x_domain, y_domain will be the set of x and y coordinates
     # of the points for triangulation
@@ -488,10 +535,11 @@ def _draw_triangulation(tri):
 
 
 def _faces_halfedges(tri, circles):
-    """Triples in circle packing are considered as faces.
+    """
+    Get the list of faces and the list of halfedges in the circle packing
+    
+    Triples in circle packing are considered as faces.
     _HalfEdge is a kind of direct edge, source -> target.
-
-    TODO - Update explanation, comments within code.
 
     # Arguments
         tri: Instance of Triangulation
@@ -500,8 +548,6 @@ def _faces_halfedges(tri, circles):
     # Returns
         faces: list of _Face
         halfedges: list of _HalfEdge
-
-    # Example
 
     """
     # faces, halfedges are lists associated with the circle packing.
@@ -526,26 +572,25 @@ def _faces_halfedges(tri, circles):
 
 
 def _boundary(halfedges):
-    """Collect the boundary circles in ccw way. cb[0] == cb[-1]
-
-    TODO - Update explanation, comments within code.
+    """Collect the boundary circles in ccw way.
+    The first circle and the last circle in the boundary circle list are same
+    that is cb[0] == cb[-1]
 
     # Arguments
-        halfedges: list of _HalfEdge
+        halfedges: list of _HalfEdge, the list of halfedges in the circle packing
 
     # Returns
         cb: list of _CircleVertex, the boundary circles
 
-    # Example
     """
     cb = []  # collection of boundary circles
-    for edge in halfedges:
+    for edge in halfedges: # find a halfedge that is on boundary
         if edge.flip == []:
             cb.append(edge.source)
             cb.append(edge.target)
             traveller = edge
             break
-    while cb[-1].index != cb[0].index:
+    while cb[-1].index != cb[0].index: 
         while traveller.next.flip != []:
             traveller = traveller.next.flip
         traveller = traveller.next
@@ -582,7 +627,7 @@ def _neighbors_cb(cb):
     TODO - Update explanation, comments within code.
 
     # Arguments
-        cb: list of _CircleVertex: boundary circles.
+        cb: list of _CircleVertex, boundary circles.
 
     # Example
     """
@@ -606,14 +651,14 @@ def _neighbors_cb(cb):
 
 def _ld_start_end_origin(cb, points):
     """
-    Find the start, end of leading dancers in boundary circles collections.
-    Find the circle on origin of coordinate.
+    Find the start and the end of leading dancers in boundary circles collections.
+    And find the circle on origin of coordinate.
 
     TODO - Update explanation, comments within code.
 
     # Arguments
         cb: list of _CircleVertex, the boundary circles
-        points: the coordinates of center of circles
+        points: nx2 float array, the coordinates of center of circles
 
     # Returns
         ld_start: _CircleVertex, the start circle of leading dancers
@@ -641,9 +686,11 @@ def _ld_start_end_origin(cb, points):
 
 
 def _leanding_dancers(cb, ld_start_index, ld_end_index):
-    """Collect the leading dancers (the circles we can manipulate their radii)
+    """
+    Collect the leading dancers (the circles we can manipulate their radii) from the
+    boudnary circles. Because leading dancers are a part of boundary circles
 
-    TODO: Update explanation, add 'Returns'
+    TODO: Update explanation
 
     # Arguments
         cb: list of _CircleVertex, the boundary circles
@@ -651,7 +698,8 @@ def _leanding_dancers(cb, ld_start_index, ld_end_index):
         ld_end_index: int, the index of ld_end in cb 
 
     # Returns
-        Returns LD, ???
+        Returns: 
+        LD: list of _CircleVertex, the set of leading dancers
 
     # Example
     """
@@ -665,10 +713,8 @@ def _leanding_dancers(cb, ld_start_index, ld_end_index):
 
 
 def _calculate_ld_surround_angles(LD):
-    """The initial shape of bridge hole determined by the the surround angle of
-    leading dancers.
-
-    TODO: Update explanation.
+    """
+    Calculate the surround angles for leading dancers.
 
     # Arguments
         LD: list of _CircleVertex, leading dancers
@@ -728,10 +774,8 @@ def _calculate_radii(circles, eps, delta_r, leavingout=[]):
 
 
 def _anchor_x_y(cb, origin_index_cb):
-    """Fix the circles lie along x axis and y axis during laying out circles
-
-    TODO
-
+    """
+    Fix the circles lie along x axis and y axis during laying out circles
     # Arguments
         cb: list of _CircleVertex, boundary circles
         origin_index_cb, the index of circle lying on origin in cb
@@ -762,15 +806,15 @@ def _anchor_x_y(cb, origin_index_cb):
 
 
 def _layout_circles(faces, anchor_x, anchor_y, origin):
-    """TODO
-
+    """
+    Lay out circles. First place the circle on the origin of the cooridinate and the circles in anchor_x 
+    and anchor_y. After these circles are placed, the rest circles would be placed forcedly by the connectivity
+    relationship encoded in faces.
     # Arguments:
         faces: list of Faces
         anchor_x: list of _CircleVertex, the circles lying along x axis
         anchor_y: list of _CircleVertex, the circles lying along y axis
         origin: _CircleVertex, the cirlce lying on origin of coordinate
-
-    # Example
     """
     x_coord = 0
     anchor_x[0].x = 0
@@ -830,7 +874,8 @@ def _layout_circles(faces, anchor_x, anchor_y, origin):
 
 
 def _draw_circles(circles, l):
-    """ TODO
+    """ 
+    Plot circles with their position and the position of their centers
     # Arguments:
         circles: list of _CircleVertex
         l: float, the half length of bridge
