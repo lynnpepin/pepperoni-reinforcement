@@ -187,7 +187,9 @@ class BHDEnv(gym.Env):
         """
         rld = self.bridge.rld
         new_rld = rld + action
-        new_rld[new_rld < 0] = 0 # replace negative values with 0
+        # TODO - Arbitrary constant
+        min_value = .01
+        new_rld[new_rld < min_value] = min_value # replace negative values with 0
         data = self.bridge.update(rld + action)
         ob = self._get_ob(data)
         reward = ob[-2]
