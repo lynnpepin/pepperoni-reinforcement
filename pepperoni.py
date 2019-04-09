@@ -184,17 +184,21 @@ def _finite_element_analysis(edges, nely, nelx, l, h):
     """
     eps_x = l / nelx
     eps_y = h / nely
+    
+    if edges[-1][3] > l - 1 * eps_x or \
+       edges[-1][4] > h - 1 * eps_y:
+        sigma = 10**10
+        area = l * h
+        return sigma, area
+    
     for e in edges:
-        if e[1] > l - 1.2 * eps_x or e[2] > h - 1.2 * eps_y:
-            sigma = np.inf
+        if e[1] > l - 1 * eps_x or \
+           e[2] > h - 1 * eps_y:
+            sigma = 10**10
             area = l * h
-            break
-    else:
-        if edges[-1][3] > l - 1.2 * eps_x or edges[-1][4] > h - 1.2 * eps_y:
-            sigma = np.inf
-            area = l * h
-        else:
-            sigma, area = _FEM(edges, nely, nelx, False)
+            return sigma, area 
+    
+    sigma, area = _FEM(edges, nely, nelx, False)
     return sigma, area
 
 
@@ -425,8 +429,20 @@ def _theta_arround(cv):
     for i in range(0, len(cv.neighbors) - 1):
         rj = cv.neighbors[i].radius
         rk = cv.neighbors[i + 1].radius
-        theta = math.acos(((r + rj)**2 + (r + rk)**2 - (rj + rk)**2) /
-                          (2 * (r + rj) * (r + rk))) + theta
+        # TODO - Better variable names here
+        top = ((r + rj)**2 + (r + rk)**2 - (rj + rk)**2)
+        bot = (2 * (r + rj) * (r + rk))
+        val = top/bot
+        try:
+            theta = math.acos(top/bot) + theta
+        # TODO - Remove
+        # Example printings
+        #except ValueError:
+        #    print("####################")
+        #    print(top, bot, val)
+        #    print(r, rj, rk)
+        #    print("####################")
+        #    exit()
     return theta
 
 
@@ -1008,4 +1024,3 @@ def _modify_boundary_edges(boundary_edges, LD, circles, faces, anchor_x,
         boundary_edges[i][2] = LD[i].y
         boundary_edges[i][3] = LD[i + 1].x
         boundary_edges[i][4] = LD[i + 1].y
-
