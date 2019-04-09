@@ -36,7 +36,7 @@ actor.add(Dense(64))
 actor.add(LeakyReLU(alpha=0.0625))
 actor.add(Dense(64))
 actor.add(LeakyReLU(alpha=0.0625))
-actor.add(Dense(nb_actions))
+actor.add(Dense(nb_actions, activation="tanh"))
 print(actor.summary())
 
 action_input = Input(shape=(nb_actions,), name='action_input')

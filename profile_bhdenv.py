@@ -1,12 +1,9 @@
-import cProfile
 import numpy as np
 from gym_wrappers import BHDEnv
 
-
 iterations = 5
-updates_per_iteration = 10
+updates_per_iteration = 15
 
-script = """
 for ii in range(iterations):
     print("Iteration:", ii)
     env = BHDEnv(length = 20.0, height = 10.0, allowable_stress = 200.0)
@@ -20,5 +17,4 @@ for ii in range(iterations):
         ob, reward, done, info = env.step(random_action)
         if done:
             break
-"""
 
