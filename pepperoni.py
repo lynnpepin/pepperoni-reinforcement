@@ -433,8 +433,7 @@ def _theta_arround(cv):
         top = ((r + rj)**2 + (r + rk)**2 - (rj + rk)**2)
         bot = (2 * (r + rj) * (r + rk))
         val = top/bot
-        try:
-            theta = math.acos(top/bot) + theta
+        theta = math.acos(top/bot) + theta
         # TODO - Remove
         # Example printings
         #except ValueError:
