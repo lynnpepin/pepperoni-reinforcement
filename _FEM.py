@@ -26,11 +26,7 @@ def _ccw(ax, ay, bx, by, cx, cy):
     # Returns:
     Bool: True if point a, b, and c are ordered in in ccw way
     """
-    if np.linalg.det([[ax, bx, cx], [ay, by, cy], [1, 1, 1]]) > 0:
-        return True
-    else:
-        return False
-
+    return np.linalg.det([[ax, bx, cx], [ay, by, cy], [1, 1, 1]]) > 0:
 
 def _membershiptest(px, py, Edges, nely, nelx):
     """
