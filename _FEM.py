@@ -66,9 +66,9 @@ def _membershiptest(px, py, Edges, nely, nelx):
                 crossNumber = crossNumber + 1
     if np.mod(crossNumber, 2) == 1:
         return True
-    elif np.mod(crossNumber, 2) == 0:
-        return False
-
+    
+    return False
+    
 
 #Edges = [[1,14,0,12.0984,2.8021,0],
 #         [1,12.0984,2.8021,11.0667,3.8240,0],
