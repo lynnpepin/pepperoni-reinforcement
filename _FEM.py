@@ -64,7 +64,7 @@ def _membershiptest(px, py, Edges, nely, nelx):
                     ax, ay, bx, by, dx, dy)) & (_ccw(cx, cy, dx, dy, ax, ay) !=
                                                 _ccw(cx, cy, dx, dy, bx, by)):
                 crossNumber = crossNumber + 1
-    return np.mod(crossNumber, 2) == 1:
+    return crossNumber % 2 == 1
     
 
 #Edges = [[1,14,0,12.0984,2.8021,0],
