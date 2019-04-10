@@ -83,7 +83,39 @@ def _membershiptest(px, py, Edges, nely, nelx):
 #         [1,4.6968,4.8969,2.6658,4.8931,0],
 #         [1,2.6658,4.8931,0,4,8891,0]]
 #if image=True , it plots the bridge
+
+
+
 def _FEM(Edges, nely, nelx, image):
+    """
+    Finite element analysis of the bridge
+    #inputs:
+        Edges: get the Edges from circular packing
+        nely: int, number of elements in y direction
+        nelx: int, number of elements in x dorection
+        image: True or False, True for drawing the bridge 
+    #Aurguments:
+        E0: constant, Young modules
+        nu: const, Poisson modules
+        fmag: int, magnitude of the load
+        e: vector of elements of the hole
+        KE: stiffness matrix of the element
+        edofVec: vector of degrees of freedom of the elements
+        edofMat: matrix of degrees of freedom for elements (each rows is for one element)
+        ik,jk,sk: vectors for building the assembled stiffness matrix
+        F: vector of forces
+        U: displacement vector
+        fixeddofs: vector of fixed degrees of freedom (boundary conditions)
+        alldofs: all degrees of freedom
+        freedofs: alldofs-fixeddofs
+        K: global stiffness matrix
+        A: area of each elements
+        t: thickness of elements
+        sigma: stress
+    #outputs:
+        Stress
+        area 
+    """
     E0 = 2e6                                  #young modules
     nu = 0.3                                  #poisson modules
 
@@ -118,7 +150,7 @@ def _FEM(Edges, nely, nelx, image):
     B1 = np.concatenate((B11, B12), axis=1)
     B2 = np.concatenate((B12T, B11), axis=1)
     B = np.concatenate((B1, B2))
-    KE = (1 / (0.91 * 24)) * (A + nu * B)                   #sttifness matrix of the element
+    KE = (1 / (0.91 * 24)) * (A + nu * B)                   #stiffness matrix of the element
     a = []
     for i in range(1, (1 + nelx) * (1 + nely) + 1):
         a.append(i)
