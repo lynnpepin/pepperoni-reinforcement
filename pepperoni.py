@@ -200,14 +200,16 @@ def _finite_element_analysis(edges, nely, nelx, l, h):
     
     if edges[-1][3] > l - 1 * eps_x or \
        edges[-1][4] > h - 1 * eps_y:
-        sigma = 10**10
+        # TODO - sigma = np.inf is ideal.
+        # sigma = 2**16 - 1 is a temporary measure to prevent NaN
+        sigma = 2**16 - 1
         area = l * h
         return sigma, area
     
     for e in edges:
         if e[1] > l - 1 * eps_x or \
            e[2] > h - 1 * eps_y:
-            sigma = 10**10
+            sigma = 2**16 - 1
             area = l * h
             return sigma, area 
     
@@ -483,15 +485,16 @@ def _theta_arround(cv):
         top = ((r + rj)**2 + (r + rk)**2 - (rj + rk)**2)
         bot = (2 * (r + rj) * (r + rk))
         val = top/bot
-        theta = math.acos(top/bot) + theta
+        try:
+            theta = math.acos(top/bot) + theta
         # TODO - Remove
         # Example printings
-        #except ValueError:
-        #    print("####################")
-        #    print(top, bot, val)
-        #    print(r, rj, rk)
-        #    print("####################")
-        #    exit()
+        except ValueError:
+            print("####################")
+            print(top, bot, val)
+            print(r, rj, rk)
+            print("####################")
+            exit()
     return theta
 
 

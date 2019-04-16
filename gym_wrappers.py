@@ -186,10 +186,28 @@ class BHDEnv(gym.Env):
             info (dict): Empty dict; to be used for debugging and logging info.         
         """
         rld = self.bridge.rld
-        data = self.bridge.update(rld + action)
+        new_rld = rld + action
+        
+        # TODO - Temporary measure to prevent NaN
+        new_rld[new_rld < 2**-14] = 2**-14   # replace negative values with near-zero
+        data = self.bridge.update(new_rld)
         ob = self._get_ob(data)
         reward = ob[-2]
-        done = ob[-1] <= 0
+        
+        # Problem: Positions_ld, mass, gmass_ld, total_length, etc. associated with leading
+        #          dancers starts to output NaN for unknown reasons!
+        done = False
+        
+        if reward <= 0 or np.isnan(reward):
+            print("Reward is ", reward)
+            reward = 0
+            done = True
+        
+        elif ob[-1] <= 0 or np.isnan(ob[-1]):
+            print("Stress ratio is", ob[-1])
+            reward = 0
+            done = True
+        
         info = {}
 
         return ob, reward, done, info
