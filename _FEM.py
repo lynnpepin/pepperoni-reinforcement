@@ -12,13 +12,38 @@ from scipy.sparse import coo_matrix
 
 
 def _ccw(ax, ay, bx, by, cx, cy):
-    if np.linalg.det([[ax, bx, cx], [ay, by, cy], [1, 1, 1]]) > 0:
-        return True
-    else:
-        return False
-
+    """
+    Determine wheter three points, a, b, and c are ordered in counter-clockwise(ccw) way
+    
+    # Arguments:
+    ax: float, the x coordinate of point a
+    ay: float, the y coordinate of point a
+    bx: float, the x coordinate of point b
+    by: float, the y coordinate of point b
+    cx: float, the x coordinate of point c
+    cy: float, the y coordinate of point c
+    
+    # Returns:
+    Bool: True if point a, b, and c are ordered in in ccw way
+    """
+    return np.linalg.det([[ax, bx, cx], [ay, by, cy], [1, 1, 1]]) > 0:
 
 def _membershiptest(px, py, Edges, nely, nelx):
+    """
+    Test whether the point p is insider the region of the hole. If p is inside the hole region,
+    return True.
+    
+    # Arguments:
+    px: float, the x coordinate of point p
+    py: float, the y coordinate of point p
+    Edges: nx5 float array, the edge set. In each row, [1,x1,y1,x2,y2] where 1 denotes the edge is a line segment, x1, y1, x2
+    and y2 are the coordinates of the end points of the edge.
+    nely: int, number of elements in y direction
+    nelx: int, number of elements in x dirction
+    
+    # Returns:
+    Bool: True is p is inside the hole regin
+    """
     size_edges = np.size(Edges, axis=0)
     number_edges = size_edges
     crossNumber = 0
@@ -39,11 +64,8 @@ def _membershiptest(px, py, Edges, nely, nelx):
                     ax, ay, bx, by, dx, dy)) & (_ccw(cx, cy, dx, dy, ax, ay) !=
                                                 _ccw(cx, cy, dx, dy, bx, by)):
                 crossNumber = crossNumber + 1
-    if np.mod(crossNumber, 2) == 1:
-        return True
-    elif np.mod(crossNumber, 2) == 0:
-        return False
-
+    return crossNumber % 2 == 1
+    
 
 #Edges = [[1,14,0,12.0984,2.8021,0],
 #         [1,12.0984,2.8021,11.0667,3.8240,0],
@@ -54,13 +76,45 @@ def _membershiptest(px, py, Edges, nely, nelx):
 #         [1,4.6968,4.8969,2.6658,4.8931,0],
 #         [1,2.6658,4.8931,0,4,8891,0]]
 #if image=True , it plots the bridge
+
+
+
 def _FEM(Edges, nely, nelx, image):
-    E0 = 2e6
-    nu = 0.3
+    """
+    Finite element analysis of the bridge
+    #inputs:
+        Edges: get the Edges from circular packing
+        nely: int, number of elements in y direction
+        nelx: int, number of elements in x dorection
+        image: True or False, True for drawing the bridge 
+    #Aurguments:
+        E0: constant, Young modules
+        nu: const, Poisson modules
+        fmag: int, magnitude of the load
+        e: vector of elements of the hole
+        KE: stiffness matrix of the element
+        edofVec: vector of degrees of freedom of the elements
+        edofMat: matrix of degrees of freedom for elements (each rows is for one element)
+        ik,jk,sk: vectors for building the assembled stiffness matrix
+        F: vector of forces
+        U: displacement vector
+        fixeddofs: vector of fixed degrees of freedom (boundary conditions)
+        alldofs: all degrees of freedom
+        freedofs: alldofs-fixeddofs
+        K: global stiffness matrix
+        A: area of each elements
+        t: thickness of elements
+        sigma: stress
+    #outputs:
+        Stress
+        area 
+    """
+    E0 = 2e6                                  #young modules
+    nu = 0.3                                  #poisson modules
 
     #nelx = 20;
-    #nely = 10;
-    fmag = 10000 / (nelx)
+    #nely = 10; 
+    fmag = 10000 / (nelx)                        #magnitude of force 
     #Edges, r_ld, r = generate_boundary_edges()
     x = np.ones([nely, nelx])
     e = []
@@ -73,7 +127,7 @@ def _FEM(Edges, nely, nelx, image):
                 e.append(elx * nely + ely + 1)
 
     e = np.sort(e)
-    e = np.unique(e)
+    e = np.unique(e)            #vector of removed elements
 
     A11 = [[12, 3, -6, -3], [3, 12, 3, 0], [-6, 3, 12, -3], [-3, 0, -3, 12]]
     A12 = [[-6, -3, 0, 3], [-3, -6, -3, -6], [0, -3, -6, 3], [3, -6, 3, -6]]
@@ -89,7 +143,7 @@ def _FEM(Edges, nely, nelx, image):
     B1 = np.concatenate((B11, B12), axis=1)
     B2 = np.concatenate((B12T, B11), axis=1)
     B = np.concatenate((B1, B2))
-    KE = (1 / (0.91 * 24)) * (A + nu * B)
+    KE = (1 / (0.91 * 24)) * (A + nu * B)                   #stiffness matrix of the element
     a = []
     for i in range(1, (1 + nelx) * (1 + nely) + 1):
         a.append(i)
@@ -106,7 +160,7 @@ def _FEM(Edges, nely, nelx, image):
 
     edofMat = np.tile(edofVec, (1, 8)) + np.tile(
         [0, 1, 2 * nely + 2, 2 * nely + 3, 2 * nely, 2 * nely + 1, -2, -1],
-        (nelx * nely, 1))
+        (nelx * nely, 1))                                                       #matrix of degrees of freedom
 
     iK = np.reshape(np.kron(edofMat, np.ones([8, 1])), (64 * nelx * nely, 1))
     jK = np.reshape(np.kron(edofMat, np.ones([1, 8])), (64 * nelx * nely, 1))
@@ -125,7 +179,7 @@ def _FEM(Edges, nely, nelx, image):
             sK = np.delete(sK, j, 0)
         edofMat = np.delete(edofMat, e[i] - 1, 0)
 
-    F = np.zeros([2 * (nely + 1) * (nelx + 1), 1])
+    F = np.zeros([2 * (nely + 1) * (nelx + 1), 1])              #force vector
     for i in range(0, nelx + 1):
         F[2 + 2 * (nely + 1) * i - 1][0] = -fmag
 
@@ -136,7 +190,7 @@ def _FEM(Edges, nely, nelx, image):
         else:
             np.delete(F, i - 1, 0)
 
-    U = np.zeros([2 * (nely + 1) * (nelx + 1), 1])
+    U = np.zeros([2 * (nely + 1) * (nelx + 1), 1])                      #displacement vector
     i = np.int(np.round(((nelx * nely) - np.max(e)) / 10))
     fixedcon = []
 
@@ -173,7 +227,7 @@ def _FEM(Edges, nely, nelx, image):
         if alldofs[i] == 0:
             alldofs = np.delete(alldofs, i)
 
-    freedofs = np.setdiff1d(alldofs, fixeddofs)
+    freedofs = np.setdiff1d(alldofs, fixeddofs)   #boundary conditions
 
     sk = np.reshape(sK, (np.size(sK)))
     jk = np.reshape(jK, (np.size(jK))) - 1
@@ -181,7 +235,7 @@ def _FEM(Edges, nely, nelx, image):
     K = coo_matrix(
         (sk, (ik, jk)), shape=(np.int(np.max(iK)), np.int(np.max(jK)))).tocsr()
     K = K.toarray()
-    K = (K + np.transpose(K)) / 2
+    K = (K + np.transpose(K)) / 2                   #assembled stifness matrix
 
     K2 = np.zeros((len(freedofs), len(freedofs)))
     F2 = np.zeros((len(freedofs), 1))
@@ -195,10 +249,10 @@ def _FEM(Edges, nely, nelx, image):
             #U2 = np.linalg.solve(F,K)
     U2 = np.dot(np.linalg.inv(K2), F2)
     for i in range(0, len(freedofs)):
-        U[freedofs[i] - 1][:] = U2[i][0]
+        U[freedofs[i] - 1][:] = U2[i][0]                    #final displacement
 
     d = np.zeros([8, 1])
-    sigma = np.zeros([np.size(edofMat, axis=0), 2])
+    sigma = np.zeros([np.size(edofMat, axis=0), 2])                 #stress
     A = 4000 / (nelx * nely)
     t = 50
     for i in range(0, np.size(edofMat, axis=0)):
