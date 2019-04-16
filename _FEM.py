@@ -9,7 +9,12 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.sparse import coo_matrix
+from time import time
 
+def _old_ccw(ax, ay, bx, by, cx, cy):
+    return np.linalg.det([[ax, bx, cx],
+                          [ay, by, cy],
+                          [1,   1,  1]]) > 0
 
 def _ccw(ax, ay, bx, by, cx, cy):
     """
@@ -26,7 +31,27 @@ def _ccw(ax, ay, bx, by, cx, cy):
     # Returns:
     Bool: True if point a, b, and c are ordered in in ccw way
     """
-    return np.linalg.det([[ax, bx, cx], [ay, by, cy], [1, 1, 1]]) > 0
+    # This is the determinant
+    # ~3.5x faster than _old_ccw
+    return ax*(by-cy) - bx*(ay-cy) + cx*(ay-by) > 0
+    # See https://stackoverflow.com/questions/9455298/ for a faster one
+
+
+def _test_ccw(iterations=100):
+    for _ in range(iterations):
+        ax, ay, bx, by, cx, cy = 100*(np.random.random(6) - .5)
+        ccw1 = _old_ccw(ax, ay, bx, by, cx, cy)
+        ccw2 = _ccw(ax, ay, bx, by, cx, cy)
+        assert(ccw1 == ccw2)
+
+def _time_ccw(iterations = 10**6, f = _ccw):
+    start = time()
+    for _ in range(iterations):
+        ax, ay, bx, by, cx, cy = 100*(np.random.random(6) - .5)
+        ccw1 = f(ax, ay, bx, by, cx, cy)
+    end = time()
+    return end-start
+
 
 def _membershiptest(px, py, Edges, nely, nelx):
     """
@@ -44,26 +69,25 @@ def _membershiptest(px, py, Edges, nely, nelx):
     # Returns:
     Bool: True is p is inside the hole regin
     """
-    size_edges = np.size(Edges, axis=0)
-    number_edges = size_edges
+    #number_edges = len(Edges)
     crossNumber = 0
-    bigNumberx = 1
-    bigNumbery = 30
-    ax = bigNumberx
-    ay = bigNumbery
-    bx = px
-    by = py
+    #Variables replaced below
+    #ax = 1
+    #ay = 30
+    #bx = px
+    #by = py
 
-    for i in range(0, number_edges):
+    for i in range(len(Edges)):
         if Edges[i][0] == 1:
             cx = 0.05 * nelx * Edges[i][1]
             cy = 0.1 * nely * Edges[i][2]
             dx = 0.05 * nelx * Edges[i][3]
             dy = 0.1 * nely * Edges[i][4]
-            if (_ccw(ax, ay, bx, by, cx, cy) != _ccw(
-                    ax, ay, bx, by, dx, dy)) & (_ccw(cx, cy, dx, dy, ax, ay) !=
-                                                _ccw(cx, cy, dx, dy, bx, by)):
-                crossNumber = crossNumber + 1
+            # TODO - The bottom is a boolean
+            if (_ccw(1, 30, px, py, cx, cy) != _ccw(1, 30, px, py, dx, dy)) & \
+               (_ccw(cx, cy, dx, dy, 1, 30) != _ccw(cx, cy, dx, dy, px, py)):
+                crossNumber += 1
+
     return crossNumber % 2 == 1
     
 
@@ -114,7 +138,7 @@ def _FEM(Edges, nely, nelx, image):
 
     #nelx = 20;
     #nely = 10; 
-    fmag = 10000 / (nelx)                        #magnitude of force 
+    fmag = 10000 / nelx                        #magnitude of force 
     #Edges, r_ld, r = generate_boundary_edges()
     x = np.ones([nely, nelx])
     e = []

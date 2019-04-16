@@ -1,5 +1,6 @@
 """Circle-packing related utilities."""
 
+# TODO - Only import what we use
 import math
 import random
 import numpy as np
@@ -230,7 +231,7 @@ def _get_area_ri(ri, rj, rk):
     # Return:
         the partial defference of the area respect to ri
     """
-    return rj * rk * (2 * ri + rj + rk) / (2 * np.sqrt(ri * rj * rk *
+    return rj * rk * (2 * ri + rj + rk) / (2 * math.sqrt(ri * rj * rk *
                                                        (ri + rj + rk)))
 
 
@@ -284,7 +285,7 @@ def _get_area_of_all(faces):
         b = rj + rk
         c = rk + ri
         p = (a + b + c) / 2
-        s = s + np.sqrt(p * (p - a) * (p - b) * (p - c))
+        s = s + math.sqrt(p * (p - a) * (p - b) * (p - c))
     return s
 
 
@@ -538,6 +539,7 @@ def _draw_triangulation(tri):
 
 
 def _faces_halfedges(tri, circles):
+    # TODO - Can be optimized, but is only run at bridge initialization
     """
     Get the list of faces and the list of halfedges in the circle packing
     
@@ -727,11 +729,11 @@ def _calculate_ld_surround_angles(LD):
     for j in range(0, len(LD)):
         surround_angle = 0
         for i in range(0, len(LD[j].neighbors) - 1):
-            L1 = np.sqrt((LD[j].x - LD[j].neighbors[i].x)**2 +
+            L1 = math.sqrt((LD[j].x - LD[j].neighbors[i].x)**2 +
                          (LD[j].y - LD[j].neighbors[i].y)**2)
-            L2 = np.sqrt((LD[j].x - LD[j].neighbors[i + 1].x)**2 +
+            L2 = math.sqrt((LD[j].x - LD[j].neighbors[i + 1].x)**2 +
                          (LD[j].y - LD[j].neighbors[i + 1].y)**2)
-            L3 = np.sqrt((LD[j].neighbors[i].x - LD[j].neighbors[i + 1].x)**2 +
+            L3 = math.sqrt((LD[j].neighbors[i].x - LD[j].neighbors[i + 1].x)**2 +
                          (LD[j].neighbors[i].y - LD[j].neighbors[i + 1].y)**2)
             alpha = math.acos((L1**2 + L2**2 - L3**2) / (2 * L1 * L2))
             surround_angle = surround_angle + alpha
