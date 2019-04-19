@@ -54,7 +54,7 @@ def _time_ccw(iterations = 10**6, f = _ccw):
     return end-start
 
 
-def _membershiptest(px, py, Edges, nely, nelx):
+def _membershiptest(px, py, Edges, nely, nelx, ccw_cda, bigNumbery):
     """
     Test whether the point p is insider the region of the hole. If p is inside the hole region,
     return True.
@@ -66,6 +66,8 @@ def _membershiptest(px, py, Edges, nely, nelx):
     and y2 are the coordinates of the end points of the edge.
     nely: int, number of elements in y direction
     nelx: int, number of elements in x dirction
+    ccw_cda: the results of _ccw(c,d,a)
+    bigNumbery: the y coordinate of some point that is out of the hole boundary
     
     # Returns:
     Bool: True is p is inside the hole regin
@@ -85,8 +87,8 @@ def _membershiptest(px, py, Edges, nely, nelx):
             dx = 0.05 * nelx * Edges[i][3]
             dy = 0.1 * nely * Edges[i][4]
             # TODO - The bottom is a boolean
-            if (_ccw(1, 30, px, py, cx, cy) != _ccw(1, 30, px, py, dx, dy)) & \
-               (_ccw(cx, cy, dx, dy, 1, 30) != _ccw(cx, cy, dx, dy, px, py)):
+            if (_ccw(1, bigNumbery, px, py, cx, cy) != _ccw(1, bigNumbery, px, py, dx, dy)) & \
+               (ccw_cda[i] != _ccw(cx, cy, dx, dy, px, py)):
                 crossNumber += 1
 
     return crossNumber % 2 == 1
@@ -143,10 +145,20 @@ def _FEM(Edges, nely, nelx, image):
     #Edges, r_ld, r = generate_boundary_edges()
     x = np.ones([nely, nelx])
     e = []
-    
+    bigNumbery = 30
+    # calculate the ccw(cx,cy,dx,dy,ax,ay)
+    ccw_cda = np.ones(len(Edges))
+    for i in range(0, len(Edges)):
+        ax = 0
+        ay = bigNumbery
+        cx = Edges[i][1]
+        cy = Edges[i][2]
+        dx = Edges[i][3]
+        dy = Edges[i][4]
+        ccw_cda[i] = _ccw(cx, cy, dx, dy, ax, ay)
     for ely in range(0, nely):
         for elx in range(0, nelx):
-            if _membershiptest((elx+1), (nely-ely-1),Edges,nely,nelx) == True:
+            if _membershiptest((elx+1), (nely-ely-1),Edges,nely,nelx,ccw_cda,bigNumbery) == True:
                 x[ely][elx] = 0
                 e.append(elx*nely + ely+1)
    
