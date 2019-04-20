@@ -261,7 +261,7 @@ def _get_grad_mass(r, LD, circles):
             rk = circles[i_r].neighbors[i_n + 1].radius
             gmass_r[i_r] = gmass_r[i_r] - _get_area_ri(ri, rj, rk)
     gmass_rld = [0] * len(LD)
-    for i in range(0, len(LD)):
+    for i in range(len(LD)):
         gmass_rld[i] = gmass_r[LD[i].index]
     return gmass_r, gmass_rld
 
@@ -300,7 +300,7 @@ def _get_surround_angles(Cir):
     ang: float array, the array of the surround angle of the given circles
     """
     ang = [0] * len(Cir)
-    for i in range(0, len(Cir)):
+    for i in range(len(Cir)):
         ang[i] = _theta_arround(Cir[i])
     return ang
 
@@ -479,23 +479,13 @@ def _theta_arround(cv):
     """
     r = cv.radius
     theta = 0
-    for i in range(0, len(cv.neighbors) - 1):
+    for i in range(len(cv.neighbors) - 1):
         rj = cv.neighbors[i].radius
         rk = cv.neighbors[i + 1].radius
-        # TODO - Better variable names here
         top = ((r + rj)**2 + (r + rk)**2 - (rj + rk)**2)
         bot = (2 * (r + rj) * (r + rk))
         val = top/bot
-        try:
-            theta = math.acos(top/bot) + theta
-        # TODO - Remove
-        # Example printings
-        except ValueError:
-            print("####################")
-            print(top, bot, val)
-            print(r, rj, rk)
-            print("####################")
-            exit()
+        theta = math.acos(top/bot) + theta
     return theta
 
 
@@ -760,22 +750,21 @@ def _calculate_radii(circles, eps, delta_r, leavingout=[]):
     n_c = len(circles)
     # theta_diff: The difference between the expected angle and actual angle
     theta_diff = [0] * n_c
-    for i in range(0, n_c):
+    for i in range(n_c):
         if circles[i].index != leavingout.index:
             theta_diff[i] = _theta_arround(circles[i]) - circles[i].totall_angle
+    
     while np.max(theta_diff) > eps or np.min(theta_diff) < -eps:
-
-        for i in range(0, n_c):
+        for i in range(n_c):
             if theta_diff[i] < 0:
                 if circles[i].index != leavingout.index:
                     circles[i].radius = circles[i].radius - delta_r * circles[i].radius
             elif theta_diff[i] > 0:
                 if circles[i].index != leavingout.index:
                     circles[i].radius = circles[i].radius + delta_r * circles[i].radius
-        for i in range(0, n_c):
+        for i in range(n_c):
             if circles[i].index != leavingout.index:
-                theta_diff[i] = _theta_arround(
-                    circles[i]) - circles[i].totall_angle
+                theta_diff[i] = _theta_arround(circles[i]) - circles[i].totall_angle
 
 
 def _anchor_x_y(cb, origin_index_cb):

@@ -54,7 +54,7 @@ def _time_ccw(iterations = 10**6, f = _ccw):
     return end-start
 
 
-def _membershiptest(px, py, Edges, nely, nelx, ccw_cda, bigNumbery):
+def _membershiptest(px, py, Edges, nely, nelx, ccw_cda):
     """
     Test whether the point p is insider the region of the hole. If p is inside the hole region,
     return True.
@@ -67,7 +67,7 @@ def _membershiptest(px, py, Edges, nely, nelx, ccw_cda, bigNumbery):
     nely: int, number of elements in y direction
     nelx: int, number of elements in x dirction
     ccw_cda: the results of _ccw(c,d,a)
-    bigNumbery: the y coordinate of some point that is out of the hole boundary
+    #bigNumbery: the y coordinate of some point that is out of the hole boundary.
     
     # Returns:
     Bool: True is p is inside the hole regin
@@ -87,7 +87,7 @@ def _membershiptest(px, py, Edges, nely, nelx, ccw_cda, bigNumbery):
             dx = 0.05 * nelx * Edges[i][3]
             dy = 0.1 * nely * Edges[i][4]
             # TODO - The bottom is a boolean
-            if (_ccw(1, bigNumbery, px, py, cx, cy) != _ccw(1, bigNumbery, px, py, dx, dy)) & \
+            if (_ccw(1, 30, px, py, cx, cy) != _ccw(1, 30, px, py, dx, dy)) & \
                (ccw_cda[i] != _ccw(cx, cy, dx, dy, px, py)):
                 crossNumber += 1
 
@@ -136,6 +136,7 @@ def _FEM(Edges, nely, nelx, image):
         Stress(MPa)
         area(m^2) 
     """
+    # TODO: More optimizations; replace constants with static values, avoid loads.
     Emin = 10**-6
     E0 = 10**11
     nu = 0.3
@@ -145,20 +146,20 @@ def _FEM(Edges, nely, nelx, image):
     #Edges, r_ld, r = generate_boundary_edges()
     x = np.ones([nely, nelx])
     e = []
-    bigNumbery = 30
     # calculate the ccw(cx,cy,dx,dy,ax,ay)
     ccw_cda = np.ones(len(Edges))
     for i in range(0, len(Edges)):
-        ax = 0
-        ay = bigNumbery
-        cx = Edges[i][1]
-        cy = Edges[i][2]
-        dx = Edges[i][3]
-        dy = Edges[i][4]
-        ccw_cda[i] = _ccw(cx, cy, dx, dy, ax, ay)
-    for ely in range(0, nely):
-        for elx in range(0, nelx):
-            if _membershiptest((elx+1), (nely-ely-1),Edges,nely,nelx,ccw_cda,bigNumbery) == True:
+        #ax = 0
+        #ay = 30
+        #cx = Edges[i][1]
+        #cy = Edges[i][2]
+        #dx = Edges[i][3]
+        #dy = Edges[i][4]
+        ccw_cda[i] = _ccw(Edges[i][1], Edges[i][2], Edges[i][3], Edges[i][4], 0, 30)
+        
+    for ely in range(nely):
+        for elx in range(nelx):
+            if _membershiptest((elx+1), (nely-ely-1),Edges,nely,nelx,ccw_cda) == True:
                 x[ely][elx] = 0
                 e.append(elx*nely + ely+1)
    
