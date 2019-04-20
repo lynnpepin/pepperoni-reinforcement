@@ -240,8 +240,8 @@ def _FEM(Edges, nely, nelx, image):
     
     d = np.zeros([8, 1])
     sigma = np.zeros([np.size(edofMat, axis=0), 2])
-    A = 200/(nelx*nely)
-    t = 1;
+    A = 400/(nelx*nely)
+    t = 0.5;
     for i in range(0, np.size(edofMat, axis=0)):
         for j in range(0, 8):
             d[j][0] = U[np.int(edofMat[i][j])-1]
