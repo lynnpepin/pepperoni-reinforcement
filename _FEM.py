@@ -250,7 +250,7 @@ def _FEM(Edges, nely, nelx, image):
                 [[-1, 0, -1, 0, 1, 0, -1, 0], [0, -1, 0, -1, 0, 1, 0, 1]], d)), (1, 2))
     sigma = abs(sigma)
     maxsigma = np.max(sigma) * 10**-6
-    area = ((nelx*nely)-len(e))*A
+    area = ((nelx*nely)-len(e))
     if  image:
         ax = plt.imshow(x)
         plt.show()
