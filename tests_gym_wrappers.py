@@ -109,6 +109,7 @@ class UtilsTests(unittest.TestCase):
         # + 4 for stress, mass, and the provided stress_ratio, mass_ratio
 
     def test_observation_space_Box(self):
+        # TODO - Break into smaller tests
         # Make sure the observation space is a box of the correct space
         ld_length = 10
         ob_space = observation_space_box(ld_length=ld_length)
@@ -123,7 +124,8 @@ class UtilsTests(unittest.TestCase):
         data = bridge.update(rld)
         obs = observe_bridge_update(
             data, length=bridge.l, height=bridge.h, allowable_stress=200.0)
-        self.assertTrue(ob_space.contains(obs))
+        print(obs[-1])
+        self.assertTrue(ob_space.contains(obs)) # TODO - Fails
 
         # Increase 1 to a higher number if desired
         for ii in range(3):
@@ -154,13 +156,15 @@ class UtilsTests(unittest.TestCase):
         ob = bridge_env.reset()
 
     def test_BHDEnv_trial(self):
+        # TODO: Break into smaller tests.
         bridge_env = BHDEnv(
             bridge=None, length=20, height=10, allowable_stress=200.0)
         rld = bridge_env.bridge.rld
         del_rld = 0.001 * np.random.rand(len(rld))
         ob, reward, done, info = bridge_env.step(del_rld)
         self.assertTrue(isinstance(ob, np.ndarray))
-        self.assertTrue(bridge_env.observation_space.contains(ob))
+        self.assertTrue(bridge_env.observation_space.contains(ob)) # TODO: Fails
+        
         self.assertTrue(isinstance(reward, float))
         self.assertTrue(isinstance(done, (bool, np.bool, np.bool8, np.bool)))
         self.assertTrue(isinstance(info, dict))
@@ -171,6 +175,7 @@ class UtilsTests(unittest.TestCase):
             rld = bridge_env.bridge.rld
             del_rld = 0.001 * 2 * (np.random.rand(len(rld)) - .5)
             ob, reward, done, info = bridge_env.step(del_rld)
+            print(ob[-1])
 
         ob = bridge_env.reset()
         # Resetting bridge_env after step means rld should be the same)
