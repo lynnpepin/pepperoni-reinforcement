@@ -177,6 +177,33 @@ class BridgeHoleDesign:
         draw the triangulation
         """
         _draw_triangulation(self._tri)
+        
+    def draw_hole_edges(self):
+        _draw_edges(self._edges, self.l)
+    
+        
+def _draw_edges(edges, l):
+    """ 
+    # Arguments:
+        edges: nX5 float array
+        l: float, the half length of bridge
+    """
+    fig, ax = plt.subplots() 
+    # change default range so that new circles will work
+    ax.set_xlim((0, l))
+    ax.set_ylim((0, l))
+
+    # Lists to hold x values and y values
+    x_values = np.zeros(len(edges)+1)
+    y_values = np.zeros(len(edges)+1)
+    for i in range(0,len(edges)):
+        x_values[i] = edges[i][1]
+        y_values[i] = edges[i][2]
+    x_values[-1] = edges[-1][3]
+    y_values[-1] = edges[-1][4]
+    plt.plot(x_values, y_values, linewidth=2)
+        
+    plt.show()
 
 
 def _finite_element_analysis(edges, nely, nelx, l, h):
