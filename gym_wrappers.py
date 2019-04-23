@@ -188,14 +188,18 @@ class BHDEnv(gym.Env):
         rld = self.bridge.rld
         new_rld = rld + action
         
-        # TODO - Temporary measure to prevent NaN
-        new_rld[new_rld < 2**-14] = 2**-14   # replace negative values with near-zero
+        if (new_rld < 2**-14).any():
+            # Any value < 0 should restart the episode!
+            done = True
+            reward = 0
+            ob = self._get_ob(data)
+            ob[-1] = 0
+            ob[-2] = 0
+            return ob, reward, done, info
+        
         data = self.bridge.update(new_rld)
         ob = self._get_ob(data)
         reward = ob[-2]
-        
-        # Problem: Positions_ld, mass, gmass_ld, total_length, etc. associated with leading
-        #          dancers starts to output NaN for unknown reasons!
         done = False
         
         if reward <= 0 or np.isnan(reward):
@@ -203,7 +207,7 @@ class BHDEnv(gym.Env):
             reward = 0
             done = True
         
-        elif ob[-1] <= 0 or np.isnan(ob[-1]):
+        if ob[-1] <= 0 or np.isnan(ob[-1]):
             print("Stress ratio is", ob[-1])
             reward = 0
             done = True

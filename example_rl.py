@@ -69,10 +69,10 @@ random_process = OrnsteinUhlenbeckProcess(
 agent = DDPGAgent(
     nb_actions=nb_actions,
     actor=actor,
-    nb_steps_warmup_actor=5,
+    nb_steps_warmup_actor=15,
     critic=critic,
     critic_action_input=action_input,
-    nb_steps_warmup_critic=5,
+    nb_steps_warmup_critic=15,
     memory=memory,
     random_process=random_process,
     gamma=.99,
@@ -83,9 +83,10 @@ agent.compile(Adam(lr=.001, clipnorm=1.), metrics=['mae'])
 # nb_steps = number of training steps to be performed.
 # No idea what the difference between the two are tbh!
 # See: https://github.com/keras-rl/keras-rl/blob/master/rl/core.py
-agent.fit(env, nb_steps=1000, visualize=False, verbose=1, nb_max_episode_steps=15)
+history = agent.fit(env, nb_steps=10000, visualize=False, verbose=1, nb_max_episode_steps=25)
 
 # Post-training
 agent.save_weights('ddpg_example-rl_weights.h5f', overwrite=True)
-agent.test(env, nb_episodes=5, visualize=False, nb_max_episode_steps=15)
+agent.test(env, nb_episodes=5, visualize=False, nb_max_episode_steps=25)
+
 
