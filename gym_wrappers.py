@@ -186,7 +186,8 @@ class BHDEnv(gym.Env):
             info (dict): Empty dict; to be used for debugging and logging info.         
         """
         rld = self.bridge.rld
-        new_rld = rld + action
+        # We make action smaller (2**-4) here. 
+        new_rld = rld + action*2**-4
         
         if (new_rld < 2**-14).any():
             # Any value < 0 should restart the episode!
