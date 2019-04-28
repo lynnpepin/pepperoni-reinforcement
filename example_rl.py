@@ -109,5 +109,3 @@ with open('train_callback.episode_rewards.pickle', 'rb') as handle:
 agent.save_weights('ddpg_example-rl_weights.h5f', overwrite=True)
 agent.test(env, nb_episodes=5, visualize=False, nb_max_episode_steps=100)
 
-# TODO: 10,000, 25, 5, 25
-

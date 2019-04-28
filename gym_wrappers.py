@@ -206,7 +206,7 @@ class BHDEnv(gym.Env):
         info = {}
         # todo - keras rl poor implementation does not permit non-real info...
         #        wow! what is up with that decision?
-        info = {'rld[{}]'.format(i) : rld[i] for i in range(len(rld))}
+        info = {'rld[{}]'.format(i) : float(rld[i]) for i in range(len(rld))}
         #info = {'rld' : rld}
         
         if (new_rld < 2**-14).any():
