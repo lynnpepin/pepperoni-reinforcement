@@ -54,7 +54,6 @@ def _time_ccw(iterations = 10**6, f = _ccw):
     end = time()
     return end-start
 
-
 def _membershiptest(px, py, Edges, nely, nelx, ccw_cda):
     """
     Test whether the point p is insider the region of the hole. If p is inside the hole region,
@@ -83,10 +82,9 @@ def _membershiptest(px, py, Edges, nely, nelx, ccw_cda):
             cy = 0.1 * nely * Edges[i][2]
             dx = 0.05 * nelx * Edges[i][3]
             dy = 0.1 * nely * Edges[i][4]
-            # TODO - The bottom is a boolean
-            if (_ccw(1, ay, px, py, cx, cy) != _ccw(1, ay, px, py, dx, dy)) & \
-               (ccw_cda[i] != _ccw(cx, cy, dx, dy, px, py)):
-                crossNumber += 1
+            
+            crossNumber += (_ccw(1, ay, px, py, cx, cy) != _ccw(1, ay, px, py, dx, dy)) & \
+               (ccw_cda[i] != _ccw(cx, cy, dx, dy, px, py))
 
     return crossNumber % 2 == 1
     
@@ -101,6 +99,31 @@ def _membershiptest(px, py, Edges, nely, nelx, ccw_cda):
 #         [1,2.6658,4.8931,0,4,8891,0]]
 #if image=True , it plots the bridge
 
+
+# Global _FEM things that never change.
+# todo: Bake these constants in to avoid costly name lookups?
+Emin = 10**-6
+E0 = 10**11
+nu = 0.3
+ay = CONFIG['length'] + 10  #i.e. 30
+
+A11 = np.array([[12, 3, -6, -3], [3, 12, 3, 0], [-6, 3, 12, -3], [-3, 0, -3, 12]])
+A12 = np.array([[-6, -3, 0, 3], [-3, -6, -3, -6], [0, -3, -6, 3], [3, -6, 3, -6]])
+B11 = np.array([[-4, 3, -2, 9], [3, -4, -9, 4], [-2, -9, -4, -3], [9, 4, -3, -4]])
+B12 = np.array([[2, -3, 4, -9], [-3, 2, 9, -2], [4, 9, 2, 3], [-9, -2, 3, 2]])
+
+A12T = np.transpose(A12)
+B12T = np.transpose(B12)
+
+A1 = np.concatenate((A11, A12), axis=1)
+A2 = np.concatenate((A12T, A11), axis=1)
+A = np.concatenate((A1, A2))
+
+B1 = np.concatenate((B11, B12), axis=1)
+B2 = np.concatenate((B12T, B11), axis=1)
+B = np.concatenate((B1, B2))
+
+KE = (1/(0.91*24))*(A+nu*B)
 
 
 def _FEM(Edges, nely, nelx, image):
@@ -134,12 +157,6 @@ def _FEM(Edges, nely, nelx, image):
         area(m^2) 
     """
     # TODO: More optimizations; replace constants with static values, avoid loads.
-    Emin = 10**-6
-    E0 = 10**11
-    nu = 0.3
-    ay = CONFIG['length'] + 10  #i.e. 30
-    
-    
     fmag = 10**7/(nelx)
     #Edges, r_ld, r = generate_boundary_edges()
     x = np.ones([nely, nelx])
@@ -161,25 +178,9 @@ def _FEM(Edges, nely, nelx, image):
                 x[ely][elx] = 0
                 e.append(elx*nely + ely+1)
    
-    e = np.sort(e)
+    #e = np.sort(e) #np.unique already sorts it all
     e = np.unique(e)
-    
-    # todo - Some optimizations can be performed in this section (next ~13 lines)
-    A11 = [[12, 3, -6, -3], [3, 12, 3, 0], [-6, 3, 12, -3], [-3, 0, -3, 12]]
-    A12 = [[-6, -3, 0, 3], [-3, -6, -3, -6], [0, -3, -6, 3], [3, -6, 3, -6]]
-    B11 = [[-4, 3, -2, 9], [3, -4, -9, 4], [-2, -9, -4, -3], [9, 4, -3, -4]]
-    B12 = [[2, -3, 4, -9], [-3, 2, 9, -2], [4, 9, 2, 3], [-9, -2, 3, 2]]
-    A12T = np.transpose(A12)
-    B12T = np.transpose(B12)
-    
-    A1 = np.concatenate((A11, A12), axis=1)
-    A2 = np.concatenate((A12T, A11), axis=1)
-    A = np.concatenate((A1, A2))
-    
-    B1 = np.concatenate((B11, B12), axis=1)
-    B2 = np.concatenate((B12T, B11), axis=1)
-    B = np.concatenate((B1, B2))
-    KE = (1/(0.91*24))*(A+nu*B)
+
     a=np.linspace(1,(1+nelx)*(1+nely),(1+nelx)*(1+nely))
     
     bb = np.reshape(a, (nelx+1, nely+1))
@@ -202,7 +203,6 @@ def _FEM(Edges, nely, nelx, image):
     
     xT = np.reshape(np.transpose(x), (1, nelx*nely))
     
-
     KE1 = np.reshape(np.transpose(KE),(np.size(KE),1))
     sK = np.reshape(np.transpose(np.dot(KE1,(Emin+np.power(xT,3)*(E0-Emin)))),(64*nelx*nely,1));
     
@@ -211,9 +211,7 @@ def _FEM(Edges, nely, nelx, image):
     F = np.zeros([2*(nely+1)*(nelx+1), 1])
     for i in range(0, nelx+1):
         F[2+2*(nely+1)*i-1][0] = -fmag
-        
-        
-        
+    
     U = np.zeros([2*(nely+1)*(nelx+1), 1])
     ##### Define the boundary conditions
     fixedcon11 = np.linspace(2*(nely+1),2*(nely+1)*(nelx+1),(nelx+1))
