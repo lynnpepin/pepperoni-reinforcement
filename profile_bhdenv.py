@@ -1,3 +1,7 @@
+# To use:
+# python3 -m cProfile -o profile_outpiut.txt profile_bhdenv.py
+# import pstats; p = pstats.Stats('profile_output.txt'); p.sort_stats('cumulative').print_stats(40)
+
 import numpy as np
 from gym_wrappers import BHDEnv
 
@@ -17,4 +21,5 @@ for ii in range(iterations):
         ob, reward, done, info = env.step(random_action)
         if done:
             break
+
 
