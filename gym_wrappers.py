@@ -21,7 +21,7 @@ import gym
 from gym.spaces import Box, Dict
 from collections import OrderedDict
 from pepperoni import BridgeHoleDesign
-
+from config_dict import CONFIG
 
 def _normalize_01(x, b=1.0, a=0.0):
     """Normalize x to [0,1] bounds, given max value b and min value a.
@@ -51,15 +51,49 @@ def _normalize_angle(x, rad=True):
         float if x is int or float
         np.ndarray if x is np.ndarray, shape (2, *)."""
     if not rad:
-        x = x * np.pi / 180
+        x = x * 0.017453292519943295 # pi/180
     
     return np.moveaxis(np.array([np.cos(x), np.sin(x)]), 0, -1)
 
+class GaussBox(Box):
+    """A gym.spaces.Box subclass, with Gaussian-distributed values.
+    
+    mean and std must be either an int, float, or array_like
+    
+    Allows sampling from a space with (low, high) = -inf, inf.
+    """
+    def __init__(self, mean=0, std=1, shape=None, dtype=np.float32):
+        super().__init__(low=-np.inf, high=np.inf, shape=shape, dtype=dtype)
+        self.mean = mean
+        self.std = std
+    
+    def sample(self):
+        return np.random.normal(self.mean, self.std, size=self.shape)
+    
+
+def observation_space_box(ld_length=10,
+                          ld_count=3,
+                          extra_length=4):
+    """ A dictionary representing the observation space from `observe_bridge_update'.
+    
+    Arguments:
+        ld_length:  integer >= 1, the number of leading dancers.
+        ld_count:  integer >= 0, the number of variables of length ld count.
+        extra_length:  integer >= 0, the number of extra variables
+    Returns:
+        Box of appropriate length, to match observe_bridge_update
+        
+        E.g. With gmass_rld shape (10), points_ld shape (10, 2),
+             and extra values mass, stress, mass_ratio, stress_ratio,
+             we have ld_length = 10, ld_count = 3, and extra_length = 4
+             for an output Box shape (34,)."""
+    return GaussBox(shape=(ld_length * ld_count + extra_length,))
+
 
 def observe_bridge_update(data,
-                          length=20.0,
-                          height=10.0,
-                          allowable_stress=200.0):
+                          length=CONFIG['length'],
+                          height=CONFIG['height'],
+                          allowable_stress=CONFIG['allowable_stress']):
     """Preprocess data and provide as an observation (dict of np array, shape (n,)).
     
     Arguments:
@@ -82,7 +116,7 @@ def observe_bridge_update(data,
         stress_ratio < 0 means the bridge has exceeded the allowable stress."""
     max_radius = np.sqrt(length**2 + height**2)
     max_mass = length * height
-    gmass_rld = np.tanh(np.array(data['gmass_rld']))
+    gmass_rld = np.array(data['gmass_rld'])
     points_ld = _normalize_01(
         np.array(data['geometry_info']['positions_ld']), b=max_radius)
     mass = _normalize_01(data['mass'], b=max_mass)
@@ -90,31 +124,12 @@ def observe_bridge_update(data,
     mass_ratio = (max_mass - data['mass']) / max_mass
     stress_ratio = (allowable_stress - data['sigma']) / allowable_stress
 
-    out = np.concatenate((gmass_rld, points_ld.reshape(-1),
-                          [mass, stress, mass_ratio, stress_ratio]))
+    ob = np.concatenate((gmass_rld, points_ld.reshape(-1),
+                         [mass, stress, mass_ratio, stress_ratio]))
 
-    return out
+    return ob
 
 
-def observation_space_box(ld_length=10,
-                          ld_count=3,
-                          extra_length=4,
-                          low=-1.0,
-                          high=1.0):
-    """ A dictionary representing the observation space from `observe_bridge_update'.
-    
-    Arguments:
-        ld_length:  integer >= 1, the number of leading dancers.
-        ld_count:  integer >= 0, the number of variables of length ld count.
-        extra_length:  integer >= 0, the number of extra variables
-    Returns:
-        Box of appropriate length, to match observe_bridge_update
-        
-        E.g. With gmass_rld shape (10), points_ld shape (10, 2),
-             and extra values mass, stress, mass_ratio, stress_ratio,
-             we have ld_length = 10, ld_count = 3, and extra_length = 4
-             for an output Box shape (34,)."""
-    return Box(low=low, high=high, shape=(ld_length * ld_count + extra_length,))
 
 
 class BHDEnv(gym.Env):
@@ -138,9 +153,9 @@ class BHDEnv(gym.Env):
 
     def __init__(self,
                  bridge=None,
-                 length=20.0,
-                 height=10.0,
-                 allowable_stress=200.0):
+                 length=CONFIG['length'],
+                 height=CONFIG['height'],
+                 allowable_stress=CONFIG['allowable_stress']):
 
         self.__version__ = "0.1.0"
 
@@ -186,8 +201,8 @@ class BHDEnv(gym.Env):
             info (dict): Empty dict; to be used for debugging and logging info.         
         """
         rld = self.bridge.rld
-        # We make action smaller (2**-4) here. 
-        new_rld = rld + action*2**-2
+        # We make action smaller (2**-4) here.
+        new_rld = rld + action*2**-4
         #self.render()
         if (new_rld < 2**-14).any():
             # Any value < 0 should restart the episode!
@@ -204,16 +219,17 @@ class BHDEnv(gym.Env):
         done = False
         
         if reward <= 0 or np.isnan(reward):
-            print("Reward is ", reward)
+            print("Reward is ", reward, "\n\n")
             reward = 0
             done = True
         
         if ob[-1] <= 0 or np.isnan(ob[-1]):
-            print("Stress ratio is", ob[-1])
+            print("Stress ratio is", ob[-1],"\n\n")
             reward = 0
             done = True
-        
+    
         info = {}
+        # Useful info: rld for sure.
 
         return ob, reward, done, info
 

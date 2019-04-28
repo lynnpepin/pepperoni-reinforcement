@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from scipy.sparse import coo_matrix
 from time import time
 from scipy.sparse.linalg import cg
+from config_dict import CONFIG
 
 def _old_ccw(ax, ay, bx, by, cx, cy):
     return np.linalg.det([[ax, bx, cx],
@@ -74,11 +75,7 @@ def _membershiptest(px, py, Edges, nely, nelx, ccw_cda):
     """
     #number_edges = len(Edges)
     crossNumber = 0
-    #Variables replaced below
-    #ax = 1
-    #ay = 30
-    #bx = px
-    #by = py
+    ay = CONFIG['length'] + 10  #i.e. 30
 
     for i in range(len(Edges)):
         if Edges[i][0] == 1:
@@ -87,7 +84,7 @@ def _membershiptest(px, py, Edges, nely, nelx, ccw_cda):
             dx = 0.05 * nelx * Edges[i][3]
             dy = 0.1 * nely * Edges[i][4]
             # TODO - The bottom is a boolean
-            if (_ccw(1, 30, px, py, cx, cy) != _ccw(1, 30, px, py, dx, dy)) & \
+            if (_ccw(1, ay, px, py, cx, cy) != _ccw(1, ay, px, py, dx, dy)) & \
                (ccw_cda[i] != _ccw(cx, cy, dx, dy, px, py)):
                 crossNumber += 1
 
@@ -140,6 +137,7 @@ def _FEM(Edges, nely, nelx, image):
     Emin = 10**-6
     E0 = 10**11
     nu = 0.3
+    ay = CONFIG['length'] + 10  #i.e. 30
     
     
     fmag = 10**7/(nelx)
@@ -155,7 +153,7 @@ def _FEM(Edges, nely, nelx, image):
         #cy = Edges[i][2]
         #dx = Edges[i][3]
         #dy = Edges[i][4]
-        ccw_cda[i] = _ccw(Edges[i][1], Edges[i][2], Edges[i][3], Edges[i][4], 0, 30)
+        ccw_cda[i] = _ccw(Edges[i][1], Edges[i][2], Edges[i][3], Edges[i][4], 0, ay)
         
     for ely in range(nely):
         for elx in range(nelx):
@@ -166,7 +164,7 @@ def _FEM(Edges, nely, nelx, image):
     e = np.sort(e)
     e = np.unique(e)
     
-    
+    # todo - Some optimizations can be performed in this section (next ~13 lines)
     A11 = [[12, 3, -6, -3], [3, 12, 3, 0], [-6, 3, 12, -3], [-3, 0, -3, 12]]
     A12 = [[-6, -3, 0, 3], [-3, -6, -3, -6], [0, -3, -6, 3], [3, -6, 3, -6]]
     B11 = [[-4, 3, -2, 9], [3, -4, -9, 4], [-2, -9, -4, -3], [9, 4, -3, -4]]

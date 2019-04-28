@@ -7,11 +7,11 @@ import numpy as np
 from scipy.spatial import Delaunay
 import matplotlib.pyplot as plt
 from _FEM import _ccw, _membershiptest, _FEM
-
+from config_dict import CONFIG
 
 class BridgeHoleDesign:
-    l = 20  # the half length of the bridge
-    h = 10  # the height of the bridge
+    l = CONFIG['length']  # the half length of the bridge
+    h = CONFIG['height']  # the height of the bridge
     a_ell = 16.0  # the initial shape of the hole is an ellipse
     b_ell = 8.0  # x^2/a_ell^2 + y^2/b_ell^2 = 1
     delta = 1.0  # distance between the points of triangulation
@@ -208,8 +208,8 @@ def _finite_element_analysis(edges, nely, nelx, l, h):
         return sigma, area
     
     for e in edges:
-        if e[1] > l - 1 * eps_x or \
-           e[2] > h - 1 * eps_y:
+        if e[1] > l - 1 * eps_x or e[2] > h - 1 * eps_y:
+            # todo: sigma = float('inf') is preferable, but causes NaN errors
             sigma = 2**16 - 1
             area = l * h
             return sigma, area 
@@ -489,14 +489,14 @@ def _theta_arround(cv):
     return theta
 
 
-def _generate_triangulation(l, h, a_ell, b_ell, delta):
+def _generate_triangulation(l = 20, h = 10, a_ell = 18, b_ell = 8, delta = 1):
     """The bridge has an elliptical hole
     discrete the elliptical hole with uniformed points in delta distance
     genetate the triangulation of these discrete points
 
     # Arguments
-        l: float, the half length of the bridge, the deflaut value is 20
-        h: float, the height of the bridge, the deflaut value is 10
+        l: float, the half length of the bridge, the default value is 20
+        h: float, the height of the bridge, the default value is 10
         a_ell, b_ell: float the  parameters of ellipse, x^2/a_ell^2 + y^2/b_ell^2 = 1
             the deflaut value of a_ell is 18, the deflaut value of b_ell is 8
         delta: float, the distance of the discrete points in the domain, the deflaut value is 1

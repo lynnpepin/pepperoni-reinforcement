@@ -115,9 +115,6 @@ class UtilsTests(unittest.TestCase):
         ob_space = observation_space_box(ld_length=ld_length)
 
         self.assertTrue(ob_space.shape == (4 + 3 * ld_length,))
-        self.assertTrue(np.all(ob_space.low == -1.0))
-        self.assertTrue(np.all(ob_space.high == 1.0))
-
         # The observation should be inside its space!
         bridge = BridgeHoleDesign()
         rld = bridge.rld
