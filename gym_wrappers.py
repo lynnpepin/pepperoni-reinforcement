@@ -23,6 +23,7 @@ from collections import OrderedDict
 from pepperoni import BridgeHoleDesign
 from config_dict import CONFIG
 
+
 def _normalize_01(x, b=1.0, a=0.0):
     """Normalize x to [0,1] bounds, given max value b and min value a.
     
@@ -130,8 +131,6 @@ def observe_bridge_update(data,
     return ob
 
 
-
-
 class BHDEnv(gym.Env):
     """
     BridgeHoleDesign environment.
@@ -157,7 +156,7 @@ class BHDEnv(gym.Env):
                  height=CONFIG['height'],
                  allowable_stress=CONFIG['allowable_stress']):
 
-        self.__version__ = "0.1.0"
+        self.__version__ = "0.1.2"
 
         # Set up bridge values
         self.length = length
@@ -183,7 +182,7 @@ class BHDEnv(gym.Env):
             allowable_stress=self.allowable_stress)
         return ob
 
-    def step(self, action):
+    def step(self, action, lr = 2**-4):
         """Accepts an action and returns a tuple (observation, reward, done, info).
         
         Arguments:
@@ -201,11 +200,18 @@ class BHDEnv(gym.Env):
             info (dict): Empty dict; to be used for debugging and logging info.         
         """
         rld = self.bridge.rld
-        # We make action smaller (2**-4) here.
-        new_rld = rld + action*2**-4
+        new_rld = rld + action*lr
         #self.render()
+        
+        info = {}
+        # todo - keras rl poor implementation does not permit non-real info...
+        #        wow! what is up with that decision?
+        info = {'rld[{}]'.format(i) : rld[i] for i in range(len(rld))}
+        #info = {'rld' : rld}
+        
         if (new_rld < 2**-14).any():
-            # Any value < 0 should restart the episode!
+            # Any value <= ~0 should restart the episode!
+            # Note: 2**-14 is close to underflow value for float32s
             done = True
             reward = 0
             ob = self._get_ob(data)
@@ -227,11 +233,8 @@ class BHDEnv(gym.Env):
             print("Stress ratio is", ob[-1],"\n\n")
             reward = 0
             done = True
-    
-        info = {}
         # Useful info: rld for sure. mass, stress, and image can be retrieved from that.
-        
-
+    
         return ob, reward, done, info
 
     def reset(self, bridge=None):
@@ -260,5 +263,5 @@ class BHDEnv(gym.Env):
         Arguments:
             mode (str): the mode to render with."""
         if mode:
-            self.bridge.draw_circlepacking()
+            self.bridge.render()
 

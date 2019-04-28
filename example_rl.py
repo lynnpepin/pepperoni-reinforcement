@@ -9,6 +9,7 @@ Code shamelessly adapted from example: https://github.com/keras-rl/keras-rl/blob
 
 import numpy as np
 import gym
+import pickle
 from gym_wrappers import BHDEnv
 from keras import Model
 from keras.models import Sequential
@@ -17,6 +18,7 @@ from keras.optimizers import Adam
 from rl.agents import DDPGAgent
 from rl.memory import SequentialMemory
 from rl.random import OrnsteinUhlenbeckProcess
+from rl.callbacks import TrainIntervalLogger
 
 # Set up environment and input/output shapes.
 env = BHDEnv(length=20.0, height=10.0, allowable_stress=200.0)
@@ -83,10 +85,29 @@ agent.compile(Adam(lr=.001, clipnorm=1.), metrics=['mae'])
 # nb_steps = number of training steps to be performed.
 # No idea what the difference between the two are tbh!
 # See: https://github.com/keras-rl/keras-rl/blob/master/rl/core.py
-history = agent.fit(env, nb_steps=10000, visualize=False, verbose=1, nb_max_episode_steps=25)
+train_callback = TrainIntervalLogger()
+history = agent.fit(env, nb_steps=10000, visualize=False, verbose=1, nb_max_episode_steps=100,
+                    callbacks = [train_callback,])
+
+# Saving infos
+with open('train_callback.infos.pickle', 'wb') as handle:
+    pickle.dump(train_callback.infos, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+with open('train_callback.episode_rewards.pickle', 'wb') as handle:
+    pickle.dump(train_callback.episode_rewards, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+'''
+# Example loading:
+with open('train_callback.infos.pickle', 'rb') as handle:
+    train_callbacks_infos = pickle.load(handle)
+
+with open('train_callback.episode_rewards.pickle', 'rb') as handle:
+    train_callbacks_episode_rewards = pickle.load(handle)
+'''
 
 # Post-training
 agent.save_weights('ddpg_example-rl_weights.h5f', overwrite=True)
-agent.test(env, nb_episodes=5, visualize=False, nb_max_episode_steps=25)
+agent.test(env, nb_episodes=5, visualize=False, nb_max_episode_steps=100)
 
+# TODO: 10,000, 25, 5, 25
 
