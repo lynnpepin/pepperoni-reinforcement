@@ -229,7 +229,8 @@ class BHDEnv(gym.Env):
             done = True
     
         info = {}
-        # Useful info: rld for sure.
+        # Useful info: rld for sure. mass, stress, and image can be retrieved from that.
+        
 
         return ob, reward, done, info
 

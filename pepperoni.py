@@ -96,6 +96,8 @@ class BridgeHoleDesign:
         self.positions_accb = _get_positions(self._AccB)
         # get the positions of interior circles
         self.positions_ci = _get_positions(self._ci)
+        # hacky solution to converge initial circle packing
+        self.update(self.rld)
 
     def update(self, rld_new):
         """
@@ -167,6 +169,50 @@ class BridgeHoleDesign:
         }
         return data
 
+    def render(self, edges = True, circles = True):
+        fig, ax = plt.subplots()
+        plt.axis('equal')
+        # todo - print mass, stress on plot?
+        if circles:
+            print("circles")
+            # change default range so that new circles will work
+            ax.set_xlim((0, self.l))
+            ax.set_ylim((0, self.h))
+
+            for c in self._circles:
+                #ax.add_artist(plt.Circle((c.x, c.y), c.radius, color='g'))
+                ax.add_artist(plt.Circle((c.x, c.y),
+                              c.radius,
+                              edgecolor='orange',
+                              alpha=.5,
+                              fill=False))
+        if edges:
+            print("edges")
+            points = np.concatenate((self.positions_accb, self.positions_ld))
+            # exterior
+            exterior_points = np.concatenate([points[0],
+                                             [0,CONFIG['height']],
+                                             [CONFIG['length'],CONFIG['height']],
+                                             [CONFIG['length'],0],
+                                             self.positions_ld[0]])
+            exterior_points = exterior_points.reshape(-1,2)
+            print(len(exterior_points))
+            print([x for x in exterior_points])
+            print([len(x) for x in exterior_points])
+            
+            print(exterior_points.shape)
+            for i in range(len(exterior_points)-1):
+                plt.plot(exterior_points[i:i+2,0], exterior_points[i:i+2,1], 'ro-')
+    
+            # interior
+            for i in range(len(points)-1):
+                plt.plot(points[i:i+2,0], points[i:i+2,1], 'ro-')
+        
+        if edges or circles:
+            print("show")
+            plt.plot()
+            plt.show()
+        
     def draw_circlepacking(self):
         """
         draw the circle packing
@@ -866,7 +912,6 @@ def _layout_circles(faces, anchor_x, anchor_y, origin):
             if i_face == len(faces_copy):
                 i_face = 0
 
-
 def _draw_circles(circles, l):
     """ 
     Plot circles with their position and the position of their centers
@@ -880,9 +925,21 @@ def _draw_circles(circles, l):
     ax.set_ylim((0, l))
 
     for c in circles:
-        ax.add_artist(plt.Circle((c.x, c.y), c.radius, color='g'))
+        #ax.add_artist(plt.Circle((c.x, c.y), c.radius, color='g'))
+        ax.add_artist(plt.Circle((c.x, c.y),
+                      c.radius,
+                      edgecolor='r',
+                      fill=False))
     plt.show()
 
+def _draw_bridge(points, length=CONFIG['length'], height=CONFIG['height']):
+    """
+    points = array_like, shape (n,2)
+    length, height = numbers
+    """
+    for i in range(len(points)-1):
+        plt.plot(points[i:i+2,0], points[i:i+2,1], 'ro-')
+    plt.show()
 
 def _generate_circlepacking(tri, delta, eps, delta_r):
     """
