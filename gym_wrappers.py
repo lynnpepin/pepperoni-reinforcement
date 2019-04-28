@@ -187,8 +187,8 @@ class BHDEnv(gym.Env):
         """
         rld = self.bridge.rld
         # We make action smaller (2**-4) here. 
-        new_rld = rld + action*2**-4
-        
+        new_rld = rld + action*2**-2
+        #self.render()
         if (new_rld < 2**-14).any():
             # Any value < 0 should restart the episode!
             done = True
@@ -242,5 +242,6 @@ class BHDEnv(gym.Env):
         
         Arguments:
             mode (str): the mode to render with."""
-        raise NotImplementedError
+        if mode:
+            self.bridge.draw_circlepacking()
 
