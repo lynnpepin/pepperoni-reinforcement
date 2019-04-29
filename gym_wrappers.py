@@ -184,7 +184,7 @@ class BHDEnv(gym.Env):
             allowable_stress=self.allowable_stress)
         return ob
 
-    def step(self, action, lr = 2**-5):
+    def step(self, action, lr = 2**-3):
         """Accepts an action and returns a tuple (observation, reward, done, info).
         
         Arguments:
@@ -232,8 +232,6 @@ class BHDEnv(gym.Env):
         ob = self._get_ob(data)
         reward = ob[-2]
         done = False
-        
-        # TODO - It seems that bridge.update does not work here??
         
         if reward <= 0 or np.isnan(reward):
             print("Reward is ", reward, "\n\n")

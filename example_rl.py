@@ -89,7 +89,7 @@ train_callback = TrainIntervalLogger()
 
 agent.load_weights("ddpg_example-rl_weights")
 
-history = agent.fit(env, nb_steps=5, visualize=False, verbose=1, nb_max_episode_steps=400,
+history = agent.fit(env, nb_steps=10000, visualize=False, verbose=1, nb_max_episode_steps=400,
                     callbacks = [train_callback,])
 
 # Saving infos
@@ -117,6 +117,5 @@ rewards = np.array(train_callbacks_episode_rewards)
 
 # Post-training
 agent.save_weights('ddpg_example-rl_weights.h5f', overwrite=True)
-agent.test(env, nb_episodes=1, visualize=False, nb_max_episode_steps=1)
+agent.test(env, nb_episodes=5, visualize=False, nb_max_episode_steps=400)
 
-# TODO: episodes from 5 to 10k, from 1 to 5, from 1 to 400
