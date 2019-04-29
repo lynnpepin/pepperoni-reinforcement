@@ -71,10 +71,10 @@ random_process = OrnsteinUhlenbeckProcess(
 agent = DDPGAgent(
     nb_actions=nb_actions,
     actor=actor,
-    nb_steps_warmup_actor=15,
+    nb_steps_warmup_actor=100,
     critic=critic,
     critic_action_input=action_input,
-    nb_steps_warmup_critic=15,
+    nb_steps_warmup_critic=100,
     memory=memory,
     random_process=random_process,
     gamma=.99,
@@ -86,7 +86,10 @@ agent.compile(Adam(lr=.001, clipnorm=1.), metrics=['mae'])
 # No idea what the difference between the two are tbh!
 # See: https://github.com/keras-rl/keras-rl/blob/master/rl/core.py
 train_callback = TrainIntervalLogger()
-history = agent.fit(env, nb_steps=10000, visualize=False, verbose=1, nb_max_episode_steps=100,
+
+agent.load_weights("ddpg_example-rl_weights")
+
+history = agent.fit(env, nb_steps=5, visualize=False, verbose=1, nb_max_episode_steps=400,
                     callbacks = [train_callback,])
 
 # Saving infos
@@ -98,14 +101,22 @@ with open('train_callback.episode_rewards.pickle', 'wb') as handle:
 
 '''
 # Example loading:
+import numpy as np
+import gym
+import pickle
+
 with open('train_callback.infos.pickle', 'rb') as handle:
     train_callbacks_infos = pickle.load(handle)
 
 with open('train_callback.episode_rewards.pickle', 'rb') as handle:
     train_callbacks_episode_rewards = pickle.load(handle)
+
+infos = np.array(train_callbacks_infos)
+rewards = np.array(train_callbacks_episode_rewards)
 '''
 
 # Post-training
 agent.save_weights('ddpg_example-rl_weights.h5f', overwrite=True)
-agent.test(env, nb_episodes=5, visualize=False, nb_max_episode_steps=100)
+agent.test(env, nb_episodes=1, visualize=False, nb_max_episode_steps=1)
 
+# TODO: episodes from 5 to 10k, from 1 to 5, from 1 to 400

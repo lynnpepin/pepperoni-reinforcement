@@ -165,6 +165,8 @@ class BHDEnv(gym.Env):
         self.max_mass = self.length * self.height
         # self.reset sets self.bridge, used later
         self.reset(bridge=bridge)
+            # self.reset sets self.bridge = bridge, self.rld = bridge.rld
+            # note that bridge.rld never updates!
         self.ld_length = len(self.bridge.rld)
         self.max_radius = np.sqrt(self.length**2 + self.height**2)
 
@@ -182,13 +184,17 @@ class BHDEnv(gym.Env):
             allowable_stress=self.allowable_stress)
         return ob
 
-    def step(self, action, lr = 2**-4):
+    def step(self, action, lr = 2**-5):
         """Accepts an action and returns a tuple (observation, reward, done, info).
         
         Arguments:
             action (np.array): an action provided to the environment.
                 Here, the actor performs gradient descent, so the 'action'
                 is a vector to be added to rld.
+            lr (float): Here, learning rate is *important*. Too large (say, .5)
+                and the initially 'random' actor bumps against invalid RLDs
+                constantly. Too small and it never gets anywhere!
+                .4 is a good place to start.
             
         Returns:
             observation (dict): agent's observation of the current environment.
@@ -199,30 +205,35 @@ class BHDEnv(gym.Env):
                 True if observation['stress'] >= allowable_stress.
             info (dict): Empty dict; to be used for debugging and logging info.         
         """
-        rld = self.bridge.rld
-        new_rld = rld + action*lr
+        new_rld = self.rld + action*lr
         #self.render()
         
         info = {}
         # todo - keras rl poor implementation does not permit non-real info...
-        #        wow! what is up with that decision?
-        info = {'rld[{}]'.format(i) : float(rld[i]) for i in range(len(rld))}
-        #info = {'rld' : rld}
+        # TODO: For some reason, rld does not seem to change...
+        info = {'rld[{}]'.format(i) : float(self.rld[i]) for i in range(len(self.rld))}
+        # OH it seems bridge never gets updated properly??
+        # i.e. we only explore a small area around a fixed, initial rld...
+        
         
         if (new_rld < 2**-14).any():
             # Any value <= ~0 should restart the episode!
             # Note: 2**-14 is close to underflow value for float32s
-            done = True
-            reward = 0
+            data = self.bridge.update(self.rld)
             ob = self._get_ob(data)
-            ob[-1] = 0
             ob[-2] = 0
+            ob[-1] = 0
+            reward = 0
+            done = True
             return ob, reward, done, info
         
-        data = self.bridge.update(new_rld)
+        self.rld = new_rld
+        data = self.bridge.update(self.rld)
         ob = self._get_ob(data)
         reward = ob[-2]
         done = False
+        
+        # TODO - It seems that bridge.update does not work here??
         
         if reward <= 0 or np.isnan(reward):
             print("Reward is ", reward, "\n\n")
@@ -244,6 +255,7 @@ class BHDEnv(gym.Env):
         if self.bridge is None:
             self.bridge = BridgeHoleDesign()
 
+        self.rld = np.array(self.bridge.rld)
         data = self.bridge.update(self.bridge.rld)
         ob = self._get_ob(data)
         return ob
