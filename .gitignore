@@ -1,3 +1,9 @@
 *pycache*
 helpy.py
 *.h5*
+*.pickle*
+*.h5f*
+
+*.png*
+*.txt*
+*.swp*
