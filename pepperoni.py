@@ -174,7 +174,7 @@ class BridgeHoleDesign:
         plt.axis('equal')
         # todo - print mass, stress on plot?
         if circles:
-            print("circles")
+            #print("circles")
             # change default range so that new circles will work
             ax.set_xlim((0, self.l))
             ax.set_ylim((0, self.h))
@@ -187,7 +187,7 @@ class BridgeHoleDesign:
                               alpha=.5,
                               fill=False))
         if edges:
-            print("edges")
+            #print("edges")
             points = np.concatenate((self.positions_accb, self.positions_ld))
             # exterior
             exterior_points = np.concatenate([points[0],
@@ -196,11 +196,6 @@ class BridgeHoleDesign:
                                              [CONFIG['length'],0],
                                              self.positions_ld[0]])
             exterior_points = exterior_points.reshape(-1,2)
-            print(len(exterior_points))
-            print([x for x in exterior_points])
-            print([len(x) for x in exterior_points])
-            
-            print(exterior_points.shape)
             for i in range(len(exterior_points)-1):
                 plt.plot(exterior_points[i:i+2,0], exterior_points[i:i+2,1], 'ro-')
     
@@ -209,8 +204,6 @@ class BridgeHoleDesign:
                 plt.plot(points[i:i+2,0], points[i:i+2,1], 'ro-')
         
         if edges or circles:
-            print("show")
-            plt.plot()
             plt.show()
         
     def draw_circlepacking(self):
