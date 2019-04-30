@@ -261,6 +261,8 @@ def _crossing_segment(ax,ay,bx,by,cx,cy,dx,dy):
     if (_ccw2(ax, ay, bx, by, cx, cy) != _ccw2(ax, ay, bx, by, dx, dy)) & \
                (_ccw2(cx,cy,dx,dy,ax,ay) != _ccw2(cx, cy, dx, dy, bx, by)):
                    return True
+    else:
+        return False             
 
 def _ccw2(ax, ay, bx, by, cx, cy):
     """
