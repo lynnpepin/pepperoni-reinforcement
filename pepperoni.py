@@ -5,7 +5,7 @@ import random
 import numpy as np
 from scipy.spatial import Delaunay
 import matplotlib.pyplot as plt
-from _FEM2 import _ccw, _membershiptest, _FEM
+from _FEM import _ccw, _membershiptest, _FEM
 
 
 class BridgeHoleDesign:
