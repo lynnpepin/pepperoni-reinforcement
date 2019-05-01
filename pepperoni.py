@@ -1,19 +1,20 @@
 """Circle-packing related utilities."""
 
+# TODO - Only import what we use
 import math
 import random
 import numpy as np
 from scipy.spatial import Delaunay
 import matplotlib.pyplot as plt
-from _FEM2 import _ccw, _membershiptest, _FEM
-
+from _FEM import _ccw, _membershiptest, _FEM
+from config_dict import CONFIG
 
 class BridgeHoleDesign:
-    l = 20  # the half length of the bridge
-    h = 10  # the height of the bridge
+    l = CONFIG['length']  # the half length of the bridge
+    h = CONFIG['height']  # the height of the bridge
     a_ell = 16.0  # the initial shape of the hole is an ellipse
     b_ell = 8.0  # x^2/a_ell^2 + y^2/b_ell^2 = 1
-    delta = 2.0  # distance between the points of triangulation
+    delta = 1.0  # distance between the points of triangulation
     eps = 0.01  # error tolerate for circle packing calculation
     delta_r = 0.001  # the changes in each iteration in the process of calculation
     nely = 10  # the number of elements in y direction for FEM
@@ -95,6 +96,8 @@ class BridgeHoleDesign:
         self.positions_accb = _get_positions(self._AccB)
         # get the positions of interior circles
         self.positions_ci = _get_positions(self._ci)
+        # hacky solution to converge initial circle packing
+        self.update(self.rld)
 
     def update(self, rld_new):
         """
@@ -111,7 +114,6 @@ class BridgeHoleDesign:
             self.gmass_rld: list of float, the gradient of the mass respect to rld
             self.angles_ld: list of float, 
         """
-        self.rld = rld_new
         # modify the cricle packing given a new radii of leading dancers
         _modify_circlepacking(rld_new, self.raccb, self.ri, self.r, self._LD,
                               self._AccB, self._ci, self._AD, self._circles,
@@ -167,6 +169,43 @@ class BridgeHoleDesign:
         }
         return data
 
+    def render(self, edges = True, circles = True):
+        fig, ax = plt.subplots()
+        plt.axis('equal')
+        # todo - print mass, stress on plot?
+        if circles:
+            #print("circles")
+            # change default range so that new circles will work
+            ax.set_xlim((0, self.l))
+            ax.set_ylim((0, self.h))
+
+            for c in self._circles:
+                #ax.add_artist(plt.Circle((c.x, c.y), c.radius, color='g'))
+                ax.add_artist(plt.Circle((c.x, c.y),
+                              c.radius,
+                              edgecolor='orange',
+                              alpha=.5,
+                              fill=False))
+        if edges:
+            #print("edges")
+            points = np.concatenate((self.positions_accb, self.positions_ld))
+            # exterior
+            exterior_points = np.concatenate([points[0],
+                                             [0,CONFIG['height']],
+                                             [CONFIG['length'],CONFIG['height']],
+                                             [CONFIG['length'],0],
+                                             self.positions_ld[0]])
+            exterior_points = exterior_points.reshape(-1,2)
+            for i in range(len(exterior_points)-1):
+                plt.plot(exterior_points[i:i+2,0], exterior_points[i:i+2,1], 'ro-')
+    
+            # interior
+            for i in range(len(points)-1):
+                plt.plot(points[i:i+2,0], points[i:i+2,1], 'ro-')
+        
+        if edges or circles:
+            plt.show()
+        
     def draw_circlepacking(self):
         """
         draw the circle packing
@@ -178,33 +217,6 @@ class BridgeHoleDesign:
         draw the triangulation
         """
         _draw_triangulation(self._tri)
-        
-    def draw_hole_edges(self):
-        _draw_edges(self._edges, self.l)
-    
-        
-def _draw_edges(edges, l):
-    """ 
-    # Arguments:
-        edges: nX5 float array
-        l: float, the half length of bridge
-    """
-    fig, ax = plt.subplots() 
-    # change default range so that new circles will work
-    ax.set_xlim((0, l))
-    ax.set_ylim((0, l))
-
-    # Lists to hold x values and y values
-    x_values = np.zeros(len(edges)+1)
-    y_values = np.zeros(len(edges)+1)
-    for i in range(0,len(edges)):
-        x_values[i] = edges[i][1]
-        y_values[i] = edges[i][2]
-    x_values[-1] = edges[-1][3]
-    y_values[-1] = edges[-1][4]
-    plt.plot(x_values, y_values, linewidth=2)
-        
-    plt.show()
 
 
 def _finite_element_analysis(edges, nely, nelx, l, h):
@@ -284,6 +296,7 @@ def _ccw2(ax, ay, bx, by, cx, cy):
     return ax*(by-cy) - bx*(ay-cy) + cx*(ay-by) > 0               
                  
 
+
 def _get_area_ri(ri, rj, rk):
     """
     calculate the partial difference of the area of triangle determined 
@@ -297,7 +310,7 @@ def _get_area_ri(ri, rj, rk):
     # Return:
         the partial defference of the area respect to ri
     """
-    return rj * rk * (2 * ri + rj + rk) / (2 * np.sqrt(ri * rj * rk *
+    return rj * rk * (2 * ri + rj + rk) / (2 * math.sqrt(ri * rj * rk *
                                                        (ri + rj + rk)))
 
 
@@ -327,7 +340,7 @@ def _get_grad_mass(r, LD, circles):
             rk = circles[i_r].neighbors[i_n + 1].radius
             gmass_r[i_r] = gmass_r[i_r] - _get_area_ri(ri, rj, rk)
     gmass_rld = [0] * len(LD)
-    for i in range(0, len(LD)):
+    for i in range(len(LD)):
         gmass_rld[i] = gmass_r[LD[i].index]
     return gmass_r, gmass_rld
 
@@ -351,7 +364,7 @@ def _get_area_of_all(faces):
         b = rj + rk
         c = rk + ri
         p = (a + b + c) / 2
-        s = s + np.sqrt(p * (p - a) * (p - b) * (p - c))
+        s = s + math.sqrt(p * (p - a) * (p - b) * (p - c))
     return s
 
 
@@ -366,7 +379,7 @@ def _get_surround_angles(Cir):
     ang: float array, the array of the surround angle of the given circles
     """
     ang = [0] * len(Cir)
-    for i in range(0, len(Cir)):
+    for i in range(len(Cir)):
         ang[i] = _theta_arround(Cir[i])
     return ang
 
@@ -545,34 +558,24 @@ def _theta_arround(cv):
     """
     r = cv.radius
     theta = 0
-    for i in range(0, len(cv.neighbors) - 1):
+    for i in range(len(cv.neighbors) - 1):
         rj = cv.neighbors[i].radius
         rk = cv.neighbors[i + 1].radius
-        # TODO - Better variable names here
         top = ((r + rj)**2 + (r + rk)**2 - (rj + rk)**2)
         bot = (2 * (r + rj) * (r + rk))
         val = top/bot
-        try:
-            theta = math.acos(top/bot) + theta
-        # TODO - Remove
-        # Example printings
-        except ValueError:
-            print("####################")
-            print(top, bot, val)
-            print(r, rj, rk)
-            print("####################")
-            exit()
+        theta = math.acos(top/bot) + theta
     return theta
 
 
-def _generate_triangulation(l, h, a_ell, b_ell, delta):
+def _generate_triangulation(l = 20, h = 10, a_ell = 18, b_ell = 8, delta = 1):
     """The bridge has an elliptical hole
     discrete the elliptical hole with uniformed points in delta distance
     genetate the triangulation of these discrete points
 
     # Arguments
-        l: float, the half length of the bridge, the deflaut value is 20
-        h: float, the height of the bridge, the deflaut value is 10
+        l: float, the half length of the bridge, the default value is 20
+        h: float, the height of the bridge, the default value is 10
         a_ell, b_ell: float the  parameters of ellipse, x^2/a_ell^2 + y^2/b_ell^2 = 1
             the deflaut value of a_ell is 18, the deflaut value of b_ell is 8
         delta: float, the distance of the discrete points in the domain, the deflaut value is 1
@@ -605,6 +608,7 @@ def _draw_triangulation(tri):
 
 
 def _faces_halfedges(tri, circles):
+    # TODO - Can be optimized, but is only run at bridge initialization
     """
     Get the list of faces and the list of halfedges in the circle packing
     
@@ -794,11 +798,11 @@ def _calculate_ld_surround_angles(LD):
     for j in range(0, len(LD)):
         surround_angle = 0
         for i in range(0, len(LD[j].neighbors) - 1):
-            L1 = np.sqrt((LD[j].x - LD[j].neighbors[i].x)**2 +
+            L1 = math.sqrt((LD[j].x - LD[j].neighbors[i].x)**2 +
                          (LD[j].y - LD[j].neighbors[i].y)**2)
-            L2 = np.sqrt((LD[j].x - LD[j].neighbors[i + 1].x)**2 +
+            L2 = math.sqrt((LD[j].x - LD[j].neighbors[i + 1].x)**2 +
                          (LD[j].y - LD[j].neighbors[i + 1].y)**2)
-            L3 = np.sqrt((LD[j].neighbors[i].x - LD[j].neighbors[i + 1].x)**2 +
+            L3 = math.sqrt((LD[j].neighbors[i].x - LD[j].neighbors[i + 1].x)**2 +
                          (LD[j].neighbors[i].y - LD[j].neighbors[i + 1].y)**2)
             alpha = math.acos((L1**2 + L2**2 - L3**2) / (2 * L1 * L2))
             surround_angle = surround_angle + alpha
@@ -825,22 +829,21 @@ def _calculate_radii(circles, eps, delta_r, leavingout=[]):
     n_c = len(circles)
     # theta_diff: The difference between the expected angle and actual angle
     theta_diff = [0] * n_c
-    for i in range(0, n_c):
+    for i in range(n_c):
         if circles[i].index != leavingout.index:
             theta_diff[i] = _theta_arround(circles[i]) - circles[i].totall_angle
+    
     while np.max(theta_diff) > eps or np.min(theta_diff) < -eps:
-
-        for i in range(0, n_c):
+        for i in range(n_c):
             if theta_diff[i] < 0:
                 if circles[i].index != leavingout.index:
                     circles[i].radius = circles[i].radius - delta_r * circles[i].radius
             elif theta_diff[i] > 0:
                 if circles[i].index != leavingout.index:
                     circles[i].radius = circles[i].radius + delta_r * circles[i].radius
-        for i in range(0, n_c):
+        for i in range(n_c):
             if circles[i].index != leavingout.index:
-                theta_diff[i] = _theta_arround(
-                    circles[i]) - circles[i].totall_angle
+                theta_diff[i] = _theta_arround(circles[i]) - circles[i].totall_angle
 
 
 def _anchor_x_y(cb, origin_index_cb):
@@ -942,7 +945,6 @@ def _layout_circles(faces, anchor_x, anchor_y, origin):
             if i_face == len(faces_copy):
                 i_face = 0
 
-
 def _draw_circles(circles, l):
     """ 
     Plot circles with their position and the position of their centers
@@ -956,9 +958,21 @@ def _draw_circles(circles, l):
     ax.set_ylim((0, l))
 
     for c in circles:
-        ax.add_artist(plt.Circle((c.x, c.y), c.radius, color='g'))
+        #ax.add_artist(plt.Circle((c.x, c.y), c.radius, color='g'))
+        ax.add_artist(plt.Circle((c.x, c.y),
+                      c.radius,
+                      edgecolor='r',
+                      fill=False))
     plt.show()
 
+def _draw_bridge(points, length=CONFIG['length'], height=CONFIG['height']):
+    """
+    points = array_like, shape (n,2)
+    length, height = numbers
+    """
+    for i in range(len(points)-1):
+        plt.plot(points[i:i+2,0], points[i:i+2,1], 'ro-')
+    plt.show()
 
 def _generate_circlepacking(tri, delta, eps, delta_r):
     """
