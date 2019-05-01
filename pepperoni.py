@@ -1147,7 +1147,7 @@ def _modify_boundary_edges(boundary_edges, LD, circles, faces, anchor_x,
     for i in range(0, len(circles)):
         circles[i].placed = 0
     # output coordinate of LD
-    for i in range(0, len(boundary_edges) - 1):
+    for i in range(0, len(LD) - 1):
         boundary_edges[i][1] = LD[i].x
         boundary_edges[i][2] = LD[i].y
         boundary_edges[i][3] = LD[i + 1].x
