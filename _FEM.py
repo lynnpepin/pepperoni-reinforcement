@@ -163,7 +163,7 @@ def _FEM(Edges, nely, nelx, image):
     e = []
     # calculate the ccw(cx,cy,dx,dy,ax,ay)
     ccw_cda = np.ones(len(Edges))
-    for i in range(0, len(Edges)):
+    for i in range(len(Edges)):
         #ax = 0
         #ay = 30
         #cx = Edges[i][1]
@@ -187,8 +187,8 @@ def _FEM(Edges, nely, nelx, image):
     nodenrs = np.transpose(bb)
     
     b = np.zeros((nely, nelx))
-    for i in range(0, nely):
-        for j in range(0, nelx):
+    for i in range(nely):
+        for j in range(nelx):
             b[i][j] = nodenrs[i][j]
     
     edofVec = np.reshape(2*b+1, ((nelx)*(nely), 1))
@@ -209,7 +209,7 @@ def _FEM(Edges, nely, nelx, image):
     #KE1 = np.reshape(np.transpose(KE),(np.size(KE),1))
     #sK = np.reshape(np.transpose(np.dot(KE1,(np.power(xT,1)))),(64*nelx*nely,1))
     F = np.zeros([2*(nely+1)*(nelx+1), 1])
-    for i in range(0, nelx+1):
+    for i in range(nelx+1):
         F[2+2*(nely+1)*i-1][0] = -fmag
     
     U = np.zeros([2*(nely+1)*(nelx+1), 1])
@@ -251,14 +251,17 @@ def _FEM(Edges, nely, nelx, image):
     sigma = np.zeros([np.size(edofMat, axis=0), 2])
     A = 400/(nelx*nely)
     t = 0.5;
-    for i in range(0, np.size(edofMat, axis=0)):
-        for j in range(0, 8):
+    for i in range(np.size(edofMat, axis=0)):
+        for j in range(8):
             d[j][0] = U[np.int(edofMat[i][j])-1]
     
-        sigma[i] = np.reshape((t*E0)/(2*A*(1-np.power(nu, 2))) * np.dot([[1, nu], [nu, 1]], np.dot(
-                [[-1, 0, -1, 0, 1, 0, -1, 0], [0, -1, 0, -1, 0, 1, 0, 1]], d)), (1, 2))
-    sigma = abs(sigma)
-    maxsigma = np.max(sigma) * 10**-6
+        sigma[i] = np.reshape(
+            (t*E0)/(2*A*(1-np.power(nu, 2))) *
+            np.dot([[1, nu], [nu, 1]],
+                   np.dot([[-1, 0, -1, 0, 1, 0, -1, 0],
+                           [0, -1, 0, -1, 0, 1, 0, 1]], d)),
+            (1, 2))
+    maxsigma = np.max(abs(sigma)) * 10**-6
     area = ((nelx*nely)-len(e))*A
     if  image:
         ax = plt.imshow(x)

@@ -122,8 +122,6 @@ class UtilsTests(unittest.TestCase):
         obs = observe_bridge_update(
             data, length=bridge.l, height=bridge.h, allowable_stress=200.0)
         self.assertTrue(ob_space.contains(obs))
-        print("OB SPACE")
-        print(obs, "\n\n\n")
 
         # Increase 1 to a higher number if desired
         for ii in range(3):
@@ -175,9 +173,6 @@ class UtilsTests(unittest.TestCase):
         ob = bridge_env.reset()
         # Resetting bridge_env after step means rld should be the same)
         self.assertTrue(np.all(bridge_env.bridge.rld == rld))
-        print("BRIDGE ENV")
-        print(bridge_env.bridge.rld)
-        print(rld, "\n\n\n")
         
         
         bridge_env.seed(612)
