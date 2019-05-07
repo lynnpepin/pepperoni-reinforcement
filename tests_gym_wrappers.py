@@ -121,12 +121,13 @@ class UtilsTests(unittest.TestCase):
         data = bridge.update(rld)
         obs = observe_bridge_update(
             data, length=bridge.l, height=bridge.h, allowable_stress=200.0)
-        print(obs[-1])
-        self.assertTrue(ob_space.contains(obs)) # TODO - Fails
+        self.assertTrue(ob_space.contains(obs))
+        print("OB SPACE")
+        print(obs, "\n\n\n")
 
         # Increase 1 to a higher number if desired
         for ii in range(3):
-            print(ii)
+
             bridge.update(rld)
             e = 0.001 * np.random.rand(len(rld))
             data = bridge.update(rld + e)
@@ -138,7 +139,6 @@ class UtilsTests(unittest.TestCase):
         # Finally, random numpy vectors should be inside the space
 
         for ii in range(10):
-            print(ii)
             random_vec = 2 * (np.random.rand(3 * ld_length + 4) - .5)
             self.assertTrue(ob_space.contains(random_vec))
 
@@ -168,15 +168,18 @@ class UtilsTests(unittest.TestCase):
 
         # do some steps
         for ii in range(10):
-            print(ii)
             rld = bridge_env.bridge.rld
             del_rld = 0.001 * 2 * (np.random.rand(len(rld)) - .5)
             ob, reward, done, info = bridge_env.step(del_rld)
-            print(ob[-1])
 
         ob = bridge_env.reset()
         # Resetting bridge_env after step means rld should be the same)
-        self.assertTrue(bridge_env.bridge.rld == rld)
+        self.assertTrue(np.all(bridge_env.bridge.rld == rld))
+        print("BRIDGE ENV")
+        print(bridge_env.bridge.rld)
+        print(rld, "\n\n\n")
+        
+        
         bridge_env.seed(612)
         bridge_env.seed(413)
         bridge_env.seed(1025)
