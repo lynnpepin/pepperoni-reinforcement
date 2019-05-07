@@ -19,12 +19,13 @@ from rl.agents import DDPGAgent
 from rl.memory import SequentialMemory
 from rl.random import OrnsteinUhlenbeckProcess
 from rl.callbacks import TrainIntervalLogger
+from config_dict import CONFIG
 
 # Set up environment and input/output shapes.
-env = BHDEnv(length=20.0, height=10.0, allowable_stress=200.0)
+env = BHDEnv(length=CONFIG['length'], height=CONFIG['height'], allowable_stress=CONFIG['allowable_stress'])
 ob = env.reset()
-np.random.seed(123)
-env.seed(123)
+#np.random.seed(123)
+#env.seed(123)
 
 obs = env.observation_space
 ld_length = env.action_space.shape[0]
@@ -119,4 +120,4 @@ rewards = np.array(train_callbacks_episode_rewards)
 agent.save_weights('ddpg_example-rl_weights.h5f', overwrite=True)
 agent.test(env, nb_episodes=5, visualize=False, nb_max_episode_steps=400)
 
-
+# TODO: Make, save to experiment-specific folder.
