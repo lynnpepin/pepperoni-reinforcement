@@ -1,6 +1,4 @@
 """Circle-packing related utilities."""
-
-# TODO - Only import what we use
 import math
 import random
 import numpy as np
