@@ -87,17 +87,6 @@ def _membershiptest(px, py, Edges, nely, nelx, ccw_cda):
                (ccw_cda[i] != _ccw(cx, cy, dx, dy, px, py))
 
     return crossNumber % 2 == 1
-    
-
-#Edges = [[1,14,0,12.0984,2.8021,0],
-#         [1,12.0984,2.8021,11.0667,3.8240,0],
-#         [1,11.0667,3.8240,9.975,4.9074,0],
-#         [1,9.975,4.9074,8.4040,4.9074,0],
-#         [1,8.4040,4.9015,6.5983,4.8969,0],
-#         [1,6.5983,4.8978,4.6968,4.8969,0],
-#         [1,4.6968,4.8969,2.6658,4.8931,0],
-#         [1,2.6658,4.8931,0,4,8891,0]]
-#if image=True , it plots the bridge
 
 
 # Global _FEM things that never change.
@@ -246,25 +235,28 @@ def _FEM(Edges, nely, nelx, image):
     for i in range(0,len(freedofs)):    
         U[np.int(freedofs[i])-1] = U2[0][i]
     
+    compliance = 0
+    for elx in range(0, nelx):
+        for ely in range(0, nely):
+            n1 = (nely+1)*elx + ely
+            n2 = (nely+1)*(elx+1) + ely
+            edof = np.array([ 2*n1, 
+                                   2*n1+1,
+                                   2*n2,
+                                   2*n2+1,
+                                   2*n2+2,
+                                   2*n2+3,
+                                   2*n1+2,
+                                   2*n1+3])
+            edof = edof.transpose()
+            Ue = U[edof]
+            UeT = Ue.transpose()
+            compliance = compliance + x[ely,elx]*np.dot(UeT, np.dot(KE, Ue))
+    compliance = compliance[0][0]
     
-    d = np.zeros([8, 1])
-    sigma = np.zeros([np.size(edofMat, axis=0), 2])
-    A = 400/(nelx*nely)
-    t = 0.5;
-    for i in range(np.size(edofMat, axis=0)):
-        for j in range(8):
-            d[j][0] = U[np.int(edofMat[i][j])-1]
-    
-        sigma[i] = np.reshape(
-            (t*E0)/(2*A*(1-np.power(nu, 2))) *
-            np.dot([[1, nu], [nu, 1]],
-                   np.dot([[-1, 0, -1, 0, 1, 0, -1, 0],
-                           [0, -1, 0, -1, 0, 1, 0, 1]], d)),
-            (1, 2))
-    maxsigma = np.max(abs(sigma)) * 10**-6
     area = ((nelx*nely)-len(e))*A
     if  image:
         ax = plt.imshow(x)
         plt.show()
-    return maxsigma,area
+    return compliance,area
 
