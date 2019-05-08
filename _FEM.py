@@ -77,7 +77,7 @@ def distance_point_boundary(px,py,Edges):
         r = min(r, distance_point_edge(px,py,Edges[i]))
     return r
 
-def _membershiptest(px, py, Edges, nely, nelx, ccw_cda):
+def _membershiptest(px, py, Edges, ccw_cda):
     """
     Test whether the point p is insider the region of the hole. If p is inside the hole region,
     return True.
@@ -101,10 +101,10 @@ def _membershiptest(px, py, Edges, nely, nelx, ccw_cda):
 
     for i in range(len(Edges)):
         if Edges[i][0] == 1:
-            cx = 0.05 * nelx * Edges[i][1]
-            cy = 0.1 * nely * Edges[i][2]
-            dx = 0.05 * nelx * Edges[i][3]
-            dy = 0.1 * nely * Edges[i][4]
+            cx = Edges[i][1]
+            cy = Edges[i][2]
+            dx = Edges[i][3]
+            dy = Edges[i][4]
             
             crossNumber += (_ccw(1, ay, px, py, cx, cy) != _ccw(1, ay, px, py, dx, dy)) & \
                (ccw_cda[i] != _ccw(cx, cy, dx, dy, px, py))
@@ -180,6 +180,9 @@ def _FEM(Edges, nely, nelx, image):
         area(m^2) 
     """
     # TODO: More optimizations; replace constants with static values, avoid loads.
+    l = 20
+    h = 10
+    
     fmag = 10**7/(nelx)
     #Edges, r_ld, r = generate_boundary_edges()
     x = np.zeros([nely, nelx])
@@ -197,8 +200,8 @@ def _FEM(Edges, nely, nelx, image):
         
     for ely in range(nely):
         for elx in range(nelx):
-            if _membershiptest((elx+1), (nely-ely-1),Edges,nely,nelx,ccw_cda) == False:
-                r = distance_point_boundary((elx+1), (nely-ely-1),Edges)
+            if _membershiptest((elx+1)*l/nelx, (nely-ely-1)*h/nely,Edges,ccw_cda) == False:
+                r = distance_point_boundary((elx+1)*l/nelx, (nely-ely-1)*h/nely,Edges)
                 x[ely][elx] = max(0, min(r,1.0))
                 e.append(elx*nely + ely+1)
    
@@ -302,7 +305,7 @@ def _FEM(Edges, nely, nelx, image):
     #sigma = abs(sigma)
     #maxsigma = np.max(sigma) * 10**-6
     
-    area = ((nelx*nely)-len(e))
+    area = ((nelx*nely)-len(e))*A
     if  image:
         ax = plt.imshow(x)
         plt.show()
