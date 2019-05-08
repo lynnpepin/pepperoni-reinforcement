@@ -7,3 +7,5 @@ helpy.py
 *.png*
 *.txt*
 *.swp*
+output*/
+ddpg*weights*
