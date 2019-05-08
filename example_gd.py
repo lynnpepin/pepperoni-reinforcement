@@ -2,6 +2,7 @@ from pepperoni import BridgeHoleDesign as BHD
 from config_dict import CONFIG
 import numpy as np
 
+
 allowable_stress = CONFIG['allowable_stress']
 # Known good starting lr
 lr = 2**-4
@@ -19,9 +20,9 @@ masses = []
 sigmas = []
 rlds = []
 print("","Iter","LR","mass","sigma", sep="\t")
-
 def print_values(label, ii, lr, mass, sigma):
-    print(label, ii, "2**"+str(int(np.log2(lr))), round(mass,3), round(sigma,3), sep="\t")
+    print(label, ii, "2**"+str(int(np.log2(lr))), round(mass,3),
+    np.format_float_scientific(sigma,2), sep="\t")
 
 for ii in range(20):
     # Quickly get a new rld that isn't too close to 0

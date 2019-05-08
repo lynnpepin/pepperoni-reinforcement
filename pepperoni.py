@@ -16,8 +16,8 @@ class BridgeHoleDesign:
         self.delta = 1.0  # distance between the points of triangulation
         self.eps = 0.01  # error tolerate for circle packing calculation
         self.delta_r = 0.001  # the changes in each iteration in the process of calculation
-        self.nely = 10  # the number of elements in y direction for FEM
-        self.nelx = 20  # the number of elements in x direction for FEM
+        self.nely = CONFIG['nely']  # the number of elements in y direction for FEM
+        self.nelx = CONFIG['nelx']  # the number of elements in x direction for FEM
         # Values initialized below:
         #self.ri = []  # List of float > 0, the radii of interior circles
         #self.raccb = []  # List of float > 0, the radii of accompanying boundary circles
@@ -226,6 +226,8 @@ def _finite_element_analysis(edges, nely, nelx, l, h):
     eps_y = h / nely
     
     if edges[-1][3] > l - 1 * eps_x or edges[-1][4] > h - 1 * eps_y:
+        # Distance between hole and rectangle is smaller than the size of an element,
+        print("  Bridge: Distance between hole and rectangle is smaller than the size of an element.")
         # todo - sigma = np.inf is ideal,
         # sigma = 2**16 - 1 large constant is a temporary measure to prevent NaN
         sigma = 2**16 - 1
@@ -234,11 +236,13 @@ def _finite_element_analysis(edges, nely, nelx, l, h):
     
     for e in edges:
         if e[1] > l - 1 * eps_x or e[2] > h - 1 * eps_y:
+            print("  Bridge: Distance between hole and rectangle is smaller than the size of an element.")
             sigma = 2**16 - 1
             area = l * h
             return sigma, area 
     
     if _crossing_boundary(edges) == True:
+        print("  Bridge: Hole shape invalid.")
         sigma = 2**16 - 1
         area = l * h
         return sigma, area 

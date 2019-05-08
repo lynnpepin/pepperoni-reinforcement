@@ -115,6 +115,7 @@ B = np.concatenate((B1, B2))
 KE = (1/(0.91*24))*(A+nu*B)
 
 
+
 def _FEM(Edges, nely, nelx, image):
     """
     Finite element analysis of the bridge
@@ -223,8 +224,8 @@ def _FEM(Edges, nely, nelx, image):
     
     K2 = np.zeros((len(freedofs),len(freedofs)))
     F2 = np.zeros((len(freedofs),1))
-    for i in range(0,len(freedofs)):
-        for j in range(0,len(freedofs)):
+    for i in range(len(freedofs)):
+        for j in range(len(freedofs)):
             K2[i][j] = K[np.int(freedofs[i])-1][np.int(freedofs[j])-1]
             F2[i][0] = F[np.int(freedofs[i])-1][0]   
         j=0
@@ -232,12 +233,12 @@ def _FEM(Edges, nely, nelx, image):
     #### Solving the equation using CG    
     U2 =cg(K2, F2, x0=None, tol=1e-05, maxiter=2000)               
     
-    for i in range(0,len(freedofs)):    
+    for i in range(len(freedofs)):    
         U[np.int(freedofs[i])-1] = U2[0][i]
     
     compliance = 0
-    for elx in range(0, nelx):
-        for ely in range(0, nely):
+    for elx in range( nelx):
+        for ely in range( nely):
             n1 = (nely+1)*elx + ely
             n2 = (nely+1)*(elx+1) + ely
             edof = np.array([ 2*n1, 
