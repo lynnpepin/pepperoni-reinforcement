@@ -87,17 +87,6 @@ def _membershiptest(px, py, Edges, nely, nelx, ccw_cda):
                (ccw_cda[i] != _ccw(cx, cy, dx, dy, px, py))
 
     return crossNumber % 2 == 1
-    
-
-#Edges = [[1,14,0,12.0984,2.8021,0],
-#         [1,12.0984,2.8021,11.0667,3.8240,0],
-#         [1,11.0667,3.8240,9.975,4.9074,0],
-#         [1,9.975,4.9074,8.4040,4.9074,0],
-#         [1,8.4040,4.9015,6.5983,4.8969,0],
-#         [1,6.5983,4.8978,4.6968,4.8969,0],
-#         [1,4.6968,4.8969,2.6658,4.8931,0],
-#         [1,2.6658,4.8931,0,4,8891,0]]
-#if image=True , it plots the bridge
 
 
 # Global _FEM things that never change.
@@ -163,7 +152,7 @@ def _FEM(Edges, nely, nelx, image):
     e = []
     # calculate the ccw(cx,cy,dx,dy,ax,ay)
     ccw_cda = np.ones(len(Edges))
-    for i in range(0, len(Edges)):
+    for i in range(len(Edges)):
         #ax = 0
         #ay = 30
         #cx = Edges[i][1]
@@ -187,8 +176,8 @@ def _FEM(Edges, nely, nelx, image):
     nodenrs = np.transpose(bb)
     
     b = np.zeros((nely, nelx))
-    for i in range(0, nely):
-        for j in range(0, nelx):
+    for i in range(nely):
+        for j in range(nelx):
             b[i][j] = nodenrs[i][j]
     
     edofVec = np.reshape(2*b+1, ((nelx)*(nely), 1))
@@ -209,7 +198,7 @@ def _FEM(Edges, nely, nelx, image):
     #KE1 = np.reshape(np.transpose(KE),(np.size(KE),1))
     #sK = np.reshape(np.transpose(np.dot(KE1,(np.power(xT,1)))),(64*nelx*nely,1))
     F = np.zeros([2*(nely+1)*(nelx+1), 1])
-    for i in range(0, nelx+1):
+    for i in range(nelx+1):
         F[2+2*(nely+1)*i-1][0] = -fmag
     
     U = np.zeros([2*(nely+1)*(nelx+1), 1])
@@ -264,19 +253,6 @@ def _FEM(Edges, nely, nelx, image):
             UeT = Ue.transpose()
             compliance = compliance + x[ely,elx]*np.dot(UeT, np.dot(KE, Ue))
     compliance = compliance[0][0]
-    
-    #d = np.zeros([8, 1])
-    #sigma = np.zeros([np.size(edofMat, axis=0), 2])
-    #A = 400/(nelx*nely)
-    #t = 0.5;
-    #for i in range(0, np.size(edofMat, axis=0)):
-    #    for j in range(0, 8):
-    #        d[j][0] = U[np.int(edofMat[i][j])-1]
-    
-    #    sigma[i] = np.reshape((t*E0)/(2*A*(1-np.power(nu, 2))) * np.dot([[1, nu], [nu, 1]], np.dot(
-    #            [[-1, 0, -1, 0, 1, 0, -1, 0], [0, -1, 0, -1, 0, 1, 0, 1]], d)), (1, 2))
-    #sigma = abs(sigma)
-    #maxsigma = np.max(sigma) * 10**-6
     
     area = ((nelx*nely)-len(e))*A
     if  image:

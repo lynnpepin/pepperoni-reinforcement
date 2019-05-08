@@ -52,7 +52,7 @@ def _normalize_angle(x, rad=True):
         float if x is int or float
         np.ndarray if x is np.ndarray, shape (2, *)."""
     if not rad:
-        x = x * 0.017453292519943295 # pi/180
+        x = x*0.017453292519943295 # pi/180
     
     return np.moveaxis(np.array([np.cos(x), np.sin(x)]), 0, -1)
 
@@ -156,7 +156,7 @@ class BHDEnv(gym.Env):
                  height=CONFIG['height'],
                  allowable_stress=CONFIG['allowable_stress']):
 
-        self.__version__ = "0.1.2"
+        self.__version__ = "0.1.3"
 
         # Set up bridge values
         self.length = length
@@ -165,15 +165,13 @@ class BHDEnv(gym.Env):
         self.max_mass = self.length * self.height
         # self.reset sets self.bridge, used later
         self.reset(bridge=bridge)
-            # self.reset sets self.bridge = bridge, self.rld = bridge.rld
-            # note that bridge.rld never updates!
+        # self.reset sets self.bridge = new bridge, self.rld = bridge.rld
         self.ld_length = len(self.bridge.rld)
         self.max_radius = np.sqrt(self.length**2 + self.height**2)
 
         # Set up values required for Env
-        self.reward_range = (0, self.max_mass)
-        self.action_space = gym.spaces.Box(
-            low=0, high=self.max_radius, shape=(self.ld_length,))
+        self.reward_range = (0, 1)
+        self.action_space = gym.spaces.Box(low=0, high=self.max_radius, shape=(self.ld_length,))
         self.observation_space = observation_space_box(ld_length=self.ld_length)
 
     def _get_ob(self, data):
@@ -184,7 +182,7 @@ class BHDEnv(gym.Env):
             allowable_stress=self.allowable_stress)
         return ob
 
-    def step(self, action, lr = 2**-3):
+    def step(self, action, lr = 2**-4):
         """Accepts an action and returns a tuple (observation, reward, done, info).
         
         Arguments:
