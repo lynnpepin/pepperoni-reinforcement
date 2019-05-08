@@ -54,6 +54,29 @@ def _time_ccw(iterations = 10**6, f = _ccw):
     end = time()
     return end-start
 
+def distance_point_segment(px,py,ax,ay,bx,by):
+    landa=((bx-px)*(bx-ax)+(by-py)*(by-ay))/((bx-ax)**2+(by-ay)**2)
+    footx=landa*ax+(1-landa)*bx
+    footy=landa*ay+(1-landa)*by
+    if landa >= 0 and landa <= 1:
+        r=np.sqrt((px-footx)**2+(py-footy)**2)
+    else:
+        r=min(np.sqrt((px-ax)**2+(py-ay)**2),np.sqrt((px-bx)**2+(py-by)**2))
+    return r
+        
+
+def distance_point_edge(px,py,edge):
+    r = 0.0
+    if edge[0] == 1:
+        r = distance_point_segment(px,py,edge[1],edge[2],edge[3],edge[4])
+    return r
+
+def distance_point_boundary(px,py,Edges):
+    r = distance_point_edge(px,py,Edges[0])
+    for i in range(0,len(Edges)):
+        r = min(r, distance_point_edge(px,py,Edges[i]))
+    return r
+
 def _membershiptest(px, py, Edges, nely, nelx, ccw_cda):
     """
     Test whether the point p is insider the region of the hole. If p is inside the hole region,
@@ -87,6 +110,17 @@ def _membershiptest(px, py, Edges, nely, nelx, ccw_cda):
                (ccw_cda[i] != _ccw(cx, cy, dx, dy, px, py))
 
     return crossNumber % 2 == 1
+    
+
+#Edges = [[1,14,0,12.0984,2.8021,0],
+#         [1,12.0984,2.8021,11.0667,3.8240,0],
+#         [1,11.0667,3.8240,9.975,4.9074,0],
+#         [1,9.975,4.9074,8.4040,4.9074,0],
+#         [1,8.4040,4.9015,6.5983,4.8969,0],
+#         [1,6.5983,4.8978,4.6968,4.8969,0],
+#         [1,4.6968,4.8969,2.6658,4.8931,0],
+#         [1,2.6658,4.8931,0,4,8891,0]]
+#if image=True , it plots the bridge
 
 
 # Global _FEM things that never change.
@@ -148,11 +182,11 @@ def _FEM(Edges, nely, nelx, image):
     # TODO: More optimizations; replace constants with static values, avoid loads.
     fmag = 10**7/(nelx)
     #Edges, r_ld, r = generate_boundary_edges()
-    x = np.ones([nely, nelx])
+    x = 0.001*np.ones([nely, nelx])
     e = []
     # calculate the ccw(cx,cy,dx,dy,ax,ay)
     ccw_cda = np.ones(len(Edges))
-    for i in range(len(Edges)):
+    for i in range(0, len(Edges)):
         #ax = 0
         #ay = 30
         #cx = Edges[i][1]
@@ -163,8 +197,9 @@ def _FEM(Edges, nely, nelx, image):
         
     for ely in range(nely):
         for elx in range(nelx):
-            if _membershiptest((elx+1), (nely-ely-1),Edges,nely,nelx,ccw_cda) == True:
-                x[ely][elx] = 0
+            if _membershiptest((elx+1), (nely-ely-1),Edges,nely,nelx,ccw_cda) == False:
+                r = distance_point_boundary((elx+1), (nely-ely-1),Edges)
+                x[ely][elx] = max(0.001, min(r,1.0))
                 e.append(elx*nely + ely+1)
    
     #e = np.sort(e) #np.unique already sorts it all
@@ -176,8 +211,8 @@ def _FEM(Edges, nely, nelx, image):
     nodenrs = np.transpose(bb)
     
     b = np.zeros((nely, nelx))
-    for i in range(nely):
-        for j in range(nelx):
+    for i in range(0, nely):
+        for j in range(0, nelx):
             b[i][j] = nodenrs[i][j]
     
     edofVec = np.reshape(2*b+1, ((nelx)*(nely), 1))
@@ -198,7 +233,7 @@ def _FEM(Edges, nely, nelx, image):
     #KE1 = np.reshape(np.transpose(KE),(np.size(KE),1))
     #sK = np.reshape(np.transpose(np.dot(KE1,(np.power(xT,1)))),(64*nelx*nely,1))
     F = np.zeros([2*(nely+1)*(nelx+1), 1])
-    for i in range(nelx+1):
+    for i in range(0, nelx+1):
         F[2+2*(nely+1)*i-1][0] = -fmag
     
     U = np.zeros([2*(nely+1)*(nelx+1), 1])
@@ -253,6 +288,19 @@ def _FEM(Edges, nely, nelx, image):
             UeT = Ue.transpose()
             compliance = compliance + x[ely,elx]*np.dot(UeT, np.dot(KE, Ue))
     compliance = compliance[0][0]
+    
+    #d = np.zeros([8, 1])
+    #sigma = np.zeros([np.size(edofMat, axis=0), 2])
+    #A = 400/(nelx*nely)
+    #t = 0.5;
+    #for i in range(0, np.size(edofMat, axis=0)):
+    #    for j in range(0, 8):
+    #        d[j][0] = U[np.int(edofMat[i][j])-1]
+    
+    #    sigma[i] = np.reshape((t*E0)/(2*A*(1-np.power(nu, 2))) * np.dot([[1, nu], [nu, 1]], np.dot(
+    #            [[-1, 0, -1, 0, 1, 0, -1, 0], [0, -1, 0, -1, 0, 1, 0, 1]], d)), (1, 2))
+    #sigma = abs(sigma)
+    #maxsigma = np.max(sigma) * 10**-6
     
     area = ((nelx*nely)-len(e))*A
     if  image:
