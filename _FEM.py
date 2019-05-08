@@ -246,22 +246,41 @@ def _FEM(Edges, nely, nelx, image):
     for i in range(0,len(freedofs)):    
         U[np.int(freedofs[i])-1] = U2[0][i]
     
+    compliance = 0
+    for elx in range(0, nelx):
+        for ely in range(0, nely):
+            n1 = (nely+1)*elx + ely
+            n2 = (nely+1)*(elx+1) + ely
+            edof = np.array([ 2*n1, 
+                                   2*n1+1,
+                                   2*n2,
+                                   2*n2+1,
+                                   2*n2+2,
+                                   2*n2+3,
+                                   2*n1+2,
+                                   2*n1+3])
+            edof = edof.transpose()
+            Ue = U[edof]
+            UeT = Ue.transpose()
+            compliance = compliance + x[ely,elx]*np.dot(UeT, np.dot(KE, Ue))
+    compliance = compliance[0][0]
     
-    d = np.zeros([8, 1])
-    sigma = np.zeros([np.size(edofMat, axis=0), 2])
-    A = 400/(nelx*nely)
-    t = 0.5;
-    for i in range(0, np.size(edofMat, axis=0)):
-        for j in range(0, 8):
-            d[j][0] = U[np.int(edofMat[i][j])-1]
+    #d = np.zeros([8, 1])
+    #sigma = np.zeros([np.size(edofMat, axis=0), 2])
+    #A = 400/(nelx*nely)
+    #t = 0.5;
+    #for i in range(0, np.size(edofMat, axis=0)):
+    #    for j in range(0, 8):
+    #        d[j][0] = U[np.int(edofMat[i][j])-1]
     
-        sigma[i] = np.reshape((t*E0)/(2*A*(1-np.power(nu, 2))) * np.dot([[1, nu], [nu, 1]], np.dot(
-                [[-1, 0, -1, 0, 1, 0, -1, 0], [0, -1, 0, -1, 0, 1, 0, 1]], d)), (1, 2))
-    sigma = abs(sigma)
-    maxsigma = np.max(sigma) * 10**-6
+    #    sigma[i] = np.reshape((t*E0)/(2*A*(1-np.power(nu, 2))) * np.dot([[1, nu], [nu, 1]], np.dot(
+    #            [[-1, 0, -1, 0, 1, 0, -1, 0], [0, -1, 0, -1, 0, 1, 0, 1]], d)), (1, 2))
+    #sigma = abs(sigma)
+    #maxsigma = np.max(sigma) * 10**-6
+    
     area = ((nelx*nely)-len(e))*A
     if  image:
         ax = plt.imshow(x)
         plt.show()
-    return maxsigma,area
+    return compliance,area
 
