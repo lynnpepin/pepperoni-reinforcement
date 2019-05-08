@@ -89,7 +89,7 @@ agent.compile(Adam(lr=.001, clipnorm=1.), metrics=['mae'])
 train_callback = TrainIntervalLogger()
 
 #example load:
-agent.load_weights("ddpg_example-rl_weights")
+#agent.load_weights("ddpg_example-rl_weights")
 
 history = agent.fit(env, nb_steps=20000, visualize=False, verbose=1, nb_max_episode_steps=400,
                     callbacks = [train_callback,])
