@@ -24,7 +24,7 @@ def print_values(label, ii, lr, mass, sigma):
     print(label, ii, "2**"+str(int(np.log2(lr))), round(mass,3),
     np.format_float_scientific(sigma,2), sep="\t")
 
-for ii in range(20):
+for ii in range(21):
     # Quickly get a new rld that isn't too close to 0
     new_rld = rld - lr*gmass_rld
     while np.any(new_rld <= 2**-16):
@@ -40,7 +40,7 @@ for ii in range(20):
     if new_data['sigma'] >= allowable_stress:
         print_values("Bad!!", ii, lr, new_data['mass'], new_data['sigma'])
         lr = lr * decay
-        print_values("Reset", ii, lr, data['mass'], data['sigma'])
+        #print_values("Reset", ii, lr, data['mass'], data['sigma'])
     
     # new_rld is good; define it as our rld and continue
     else:
