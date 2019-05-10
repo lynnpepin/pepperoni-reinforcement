@@ -1,5 +1,7 @@
 # pepperoni-reinforcement
 
+This README is *old and not updated!* This does not represent the state of the project anymore!
+
 ## Abstract
 
 When designing a bridge, it is desirable to minimize the material used while also meeting safety constraints. For the purpose of this work, a bridge is a two-dimensional rectangular shape with a polygonal hole cut into its body.
@@ -24,12 +26,6 @@ For future work, we hope we can produce an agent that can quickly learn how to f
 See `example_rl.py` for the most pertinent code. In `gym_wrappers.py`, we utilize OpenAI's Gym framework to build an environment wrapper around the bridge and FEM/circle packing code. This provides an environment, `BHDEnv()`, which interfaces with agents and policies implemented in `keras-rl`. In this environment, the `action` provided is a small change vector which updates `rld` (the radii of the leading dancers).
 
 The [DDPG algorithm](https://arxiv.org/pdf/1509.02971v2.pdf) is chosen as the continous analogue to DQNs.
-
-### To be done:
- * Big blocker: Numerical issues in code resulting in NaN values. Temporary fixes have been made, so the code now runs.
- * Transfer learning: Train the agent first in a much-faster gradient-descent environment, then fine-tune it on the slow, bridge-design environment.
- * Optimize code, analyze using `cProfile`.
- * Enable in-training visualization plus results-generating code.
 
 
 ## Packages used:
